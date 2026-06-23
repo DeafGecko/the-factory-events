@@ -1,3 +1,4 @@
+/// <reference path="../.astro/types.d.ts" />
 /// <reference types="@astrojs/cloudflare" />
 
 type CloudflareEnv = import('@astrojs/cloudflare').Runtime<import('../wrangler.toml').Env>;

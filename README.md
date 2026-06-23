@@ -1,4 +1,4 @@
-# The Factory at Franklin, TN – Event Planner Platform
+# 🏛️ The Factory at Franklin, TN – Event Planner Platform
 
 [![Astro](https://img.shields.io/badge/Astro-5.1-FF5D01?logo=astro&logoColor=white)](https://astro.build)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://reactjs.org/)
@@ -14,15 +14,15 @@
 
 ---
 
-## Features
+## ✨ Features
 
-### Client Experience
+### 👤 Client Experience
 - **Two‑step booking form** – client info + event details with estimated pricing.
 - **Client dashboard** – view booking status, pay outstanding balances, and download invoices (coming soon).
 - **Auto‑generated account numbers** for every booking.
 - **Self‑service login** using booking # + email.
 
-### Admin Back‑Office
+### 🔐 Admin Back‑Office
 - **Secure admin login** (password‑protected).
 - **Admin dashboard** with real‑time stats:
   - Revenue, total bookings, upcoming events, QR scan counts.
@@ -32,13 +32,13 @@
 - **Bills & payments** – track outstanding balances and record payments.
 - **Client customisation** – brand colors, fonts, and logo can be updated via Sanity settings.
 
-### Design Language
+### 🎨 Design Language
 - **Swiss‑industrial minimalism** – clean grids, generous white space, functional typography.
 - **Subtle curves** (`rounded-lg` / `rounded-md`) – Apple‑inspired refinement without over‑rounding.
 - **Warm palette** – Carmine, Cardinal, Chamois, Sepia, and Dark Brown.
 - **Built‑in dark mode** and **high‑contrast** support for accessibility.
 
-### Architecture & Technology
+### ⚙️ Architecture & Technology
 - **Astro 5** – islands architecture; only the interactive parts (charts, forms) are hydrated.
 - **React 19** – for interactive UI components.
 - **Sanity v3** – headless CMS for bookings, settings, subscribers, and waitlist.
@@ -50,17 +50,7 @@
 
 ---
 
-## Screenshots
-
-*(Add your screenshots here – e.g., dashboard, booking form, calendar)*
-
-| Admin Dashboard | Booking Form |
-| :---: | :---: |
-| *[Screenshot of dashboard]* | *[Screenshot of booking form]* |
-
----
-
-## Tech Stack at a Glance
+## 🧰 Tech Stack at a Glance
 
 | Layer | Technology |
 | :--- | :--- |
@@ -76,7 +66,7 @@
 
 ---
 
-## Getting Started (Local Development)
+## 🚀 Getting Started (Local Development)
 
 ### Prerequisites
 - Node.js 22+
@@ -85,5 +75,5 @@
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/YOUR_USERNAME/the-factory-events.git
+git clone https://github.com/DeafGecko/the-factory-events.git
 cd the-factory-events
