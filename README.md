@@ -14,7 +14,7 @@
 
 ---
 
-## ✨ Features
+## Features
 
 ### Client Experience
 - **Two‑step booking form** – client info + event details with estimated pricing.
