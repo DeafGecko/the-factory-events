@@ -1,0 +1,106 @@
+---
+// src/pages/admin/dashboard.astro
+// Admin Dashboard – stats, recent bookings, and (later) charts
+
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { sanityClient } from '../../lib/sanity';
+
+// ─── TEMPORARY: Chart components – uncomment when files exist ───
+// import RevenueChart from '../../components/charts/RevenueChart';
+// import StatusPie from '../../components/charts/StatusPie';
+
+// ─── Fetch all bookings from Sanity ───
+const bookings = await sanityClient.fetch(`*[_type == "booking"]`);
+const totalBookings = bookings.length;
+const upcoming = bookings.filter((b: any) => new Date(b.eventDate) > new Date()).length;
+
+// ─── Mock stats – replace with D1 queries later ───
+const totalRevenue = 12450;
+const qrScans = 247;
+
+// ─── Payment status counts ───
+const paid = bookings.filter((b: any) => b.paymentStatus === 'paid').length;
+const pending = bookings.filter((b: any) => b.paymentStatus === 'partial').length;
+const unpaid = bookings.filter((b: any) => b.paymentStatus === 'unpaid' || !b.paymentStatus).length;
+
+// ─── Mock monthly revenue data (for future chart) ───
+const monthlyRevenue = [1200, 1500, 1800, 2200, 2500, 3000, 2800, 2600, 2900, 3100, 3400, 3600];
+---
+
+<AdminLayout title="Dashboard">
+
+  <!-- ============================================================ -->
+  <!-- STATS CARDS                                                  -->
+  <!-- ============================================================ -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+    <div class="card p-6">
+      <p class="text-sm text-[#8e8e93] uppercase tracking-wider">Revenue</p>
+      <p class="text-3xl font-light">${totalRevenue.toLocaleString()}</p>
+    </div>
+    <div class="card p-6">
+      <p class="text-sm text-[#8e8e93] uppercase tracking-wider">Bookings</p>
+      <p class="text-3xl font-light">{totalBookings}</p>
+    </div>
+    <div class="card p-6">
+      <p class="text-sm text-[#8e8e93] uppercase tracking-wider">Upcoming</p>
+      <p class="text-3xl font-light">{upcoming}</p>
+    </div>
+    <div class="card p-6">
+      <p class="text-sm text-[#8e8e93] uppercase tracking-wider">QR Scans</p>
+      <p class="text-3xl font-light">{qrScans}</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- CHARTS (temporarily hidden)                                  -->
+  <!-- Uncomment when RevenueChart & StatusPie exist               -->
+  <!-- ============================================================ -->
+  <!--
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <div class="card p-6">
+      <h3 class="text-sm uppercase tracking-wider text-[#8e8e93] mb-4">Revenue by Month</h3>
+      <RevenueChart client:load data={monthlyRevenue} />
+    </div>
+    <div class="card p-6 flex flex-col items-center">
+      <h3 class="text-sm uppercase tracking-wider text-[#8e8e93] mb-4">Booking Status</h3>
+      <StatusPie client:load paid={paid} pending={pending} unpaid={unpaid} />
+    </div>
+  </div>
+  -->
+
+  <!-- ============================================================ -->
+  <!-- RECENT BOOKINGS TABLE                                        -->
+  <!-- ============================================================ -->
+  <div class="card p-6">
+    <h3 class="text-sm uppercase tracking-wider text-[#8e8e93] mb-4">Recent Bookings</h3>
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-[#e8e4dc]/60">
+          <th class="text-left py-3 font-medium text-[#8e8e93]">Account</th>
+          <th class="text-left py-3 font-medium text-[#8e8e93]">Client</th>
+          <th class="text-left py-3 font-medium text-[#8e8e93]">Event Date</th>
+          <th class="text-left py-3 font-medium text-[#8e8e93]">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {bookings.slice(0, 5).map((b: any) => (
+          <tr key={b._id} class="border-b border-[#e8e4dc]/30">
+            <td class="py-3 font-mono text-sm">{b.accountNumber}</td>
+            <td>{b.clientName}</td>
+            <td>{new Date(b.eventDate).toLocaleDateString()}</td>
+            <td>
+              <span class={`px-3 py-1 rounded-full text-xs font-medium ${
+                b.paymentStatus === 'paid' ? 'badge-paid' :
+                b.paymentStatus === 'partial' ? 'badge-partial' :
+                'badge-unpaid'
+              }`}>
+                {b.paymentStatus || 'unpaid'}
+              </span>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+</AdminLayout>

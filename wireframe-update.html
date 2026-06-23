@@ -1,0 +1,1407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Event Planner — Service Blueprint + Palette Wireframe</title>
+    <style>
+        /* ============================================================ */
+        /* BASE — Dark Canvas with Blueprint Grid + Warm Accents        */
+        /* ============================================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background: #0A0A08;
+            /* Blueprint grid overlay */
+            background-image:
+                /* Micro grid (10px) — warm brown */
+                linear-gradient(rgba(100, 60, 40, 0.12) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(100, 60, 40, 0.12) 1px, transparent 1px),
+                /* Macro grid (80px) — lighter warm */
+                linear-gradient(rgba(160, 100, 70, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(160, 100, 70, 0.05) 1px, transparent 1px);
+            background-size: 10px 10px, 10px 10px, 80px 80px, 80px 80px;
+            background-attachment: fixed;
+            padding: 32px 20px 48px 20px;
+            color: #E8DDD0;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1440px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        /* ============================================================ */
+        /* COLOR PALETTE BADGES (From your screenshot)                  */
+        /* ============================================================ */
+        .palette-bar {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+            background: rgba(20, 16, 12, 0.6);
+            border: 1px solid #3A2A1E;
+            margin-bottom: 24px;
+            align-items: center;
+            flex-wrap: wrap;
+            backdrop-filter: blur(4px);
+        }
+
+        .palette-bar .label {
+            font-size: 9px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #8A7A6A;
+            margin-right: 16px;
+        }
+
+        .palette-swatch {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px 4px 6px;
+            border: 1px solid #3A2A1E;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .palette-swatch .color-box {
+            width: 18px;
+            height: 18px;
+            border: 1px solid #5A4A3A;
+            flex-shrink: 0;
+        }
+
+        .palette-swatch .color-name {
+            font-size: 8px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: #C0B0A0;
+        }
+
+        .palette-swatch .color-hex {
+            font-size: 7px;
+            color: #6A5A4A;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* ============================================================ */
+        /* HEADER — Blueprint Title                                    */
+        /* ============================================================ */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #3A2A1E;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .header-left h1 {
+            font-size: 20px;
+            font-weight: 300;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #D4C0B0;
+            text-shadow: 0 0 30px rgba(180, 120, 80, 0.1);
+        }
+
+        .header-left .sub {
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: #6A5A4A;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .badge-version {
+            font-size: 9px;
+            letter-spacing: 1px;
+            color: #6A5A4A;
+            border: 1px solid #3A2A1E;
+            padding: 4px 14px;
+            text-transform: uppercase;
+            background: rgba(30, 20, 14, 0.4);
+        }
+
+        /* ============================================================ */
+        /* TECH STACK                                                   */
+        /* ============================================================ */
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 12px 16px;
+            background: rgba(20, 16, 12, 0.4);
+            border: 1px solid #3A2A1E;
+            margin-bottom: 28px;
+            align-items: center;
+        }
+
+        .tech-stack .label {
+            font-size: 8px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #6A5A4A;
+            margin-right: 8px;
+        }
+
+        .tech-tag {
+            font-size: 8px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            padding: 3px 12px;
+            border: 1px solid #4A3A2A;
+            color: #C0B0A0;
+            background: rgba(40, 30, 20, 0.3);
+        }
+
+        .tech-tag.highlight {
+            border-color: #D4C0B0;
+            color: #E8DDD0;
+            background: rgba(60, 40, 30, 0.3);
+        }
+
+        .tech-tag.warm {
+            border-color: #8A6A4A;
+            color: #D4B090;
+        }
+
+        /* ============================================================ */
+        /* CARDS — Glass with warm accents                              */
+        /* ============================================================ */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 18px;
+        }
+
+        .card {
+            grid-column: span 12;
+            background: rgba(20, 16, 12, 0.5);
+            backdrop-filter: blur(2px);
+            border: 1px solid #3A2A1E;
+            padding: 22px 24px 24px 24px;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-title {
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #8A7A6A;
+            border-bottom: 1px solid #2A1E14;
+            padding-bottom: 10px;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .card-title span {
+            color: #5A4A3A;
+            font-weight: 300;
+        }
+
+        .card-title .annotation {
+            font-size: 8px;
+            color: #B09880;
+            border: 1px solid #3A2A1E;
+            padding: 2px 12px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        /* ============================================================ */
+        /* SERVICE BLUEPRINT FLOW — From Your Screenshot               */
+        /* ============================================================ */
+        .blueprint-flow {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            margin-bottom: 8px;
+        }
+
+        .flow-row {
+            display: grid;
+            grid-template-columns: 180px 1fr;
+            border-bottom: 1px solid #2A1E14;
+        }
+
+        .flow-row:last-child {
+            border-bottom: none;
+        }
+
+        .flow-label {
+            padding: 10px 14px;
+            font-size: 8px;
+            font-weight: 500;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #5A4A3A;
+            background: rgba(30, 20, 14, 0.3);
+            border-right: 1px solid #2A1E14;
+            display: flex;
+            align-items: center;
+        }
+
+        .flow-steps {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2px;
+            padding: 6px 10px;
+            align-items: center;
+        }
+
+        .flow-step {
+            font-size: 9px;
+            color: #C0B0A0;
+            padding: 4px 12px;
+            border: 1px solid #3A2A1E;
+            background: rgba(20, 16, 12, 0.3);
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+
+        .flow-step.highlight {
+            border-color: #8A6A4A;
+            color: #E8DDD0;
+            background: rgba(60, 40, 30, 0.3);
+        }
+
+        .flow-step .icon {
+            margin-right: 4px;
+        }
+
+        .flow-arrow {
+            color: #3A2A1E;
+            font-size: 14px;
+            padding: 0 4px;
+        }
+
+        .flow-step.action {
+            border-color: #5A4A3A;
+            color: #B09880;
+            background: rgba(40, 30, 20, 0.2);
+        }
+
+        /* ============================================================ */
+        /* FORM ELEMENTS — Warm palette                                 */
+        /* ============================================================ */
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .field label {
+            font-size: 8px;
+            font-weight: 500;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            color: #6A5A4A;
+        }
+
+        .field .input {
+            height: 34px;
+            border: 1px solid #3A2A1E;
+            padding: 0 14px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            color: #D4C0B0;
+            background: rgba(10, 8, 6, 0.4);
+            font-family: 'Courier New', monospace;
+            letter-spacing: 0.3px;
+        }
+
+        .field .input.active {
+            border-color: #8A6A4A;
+            background: rgba(40, 30, 20, 0.3);
+        }
+
+        .field .input.textarea {
+            height: 50px;
+            align-items: flex-start;
+            padding-top: 8px;
+            color: #6A5A4A;
+        }
+
+        /* ============================================================ */
+        /* BUTTONS                                                      */
+        /* ============================================================ */
+        .btn {
+            border: 1px solid #4A3A2A;
+            padding: 8px 24px;
+            font-size: 9px;
+            font-weight: 500;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            background: transparent;
+            color: #B09880;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: #3A2A1E;
+            color: #E8DDD0;
+            border-color: #5A4A3A;
+        }
+
+        .btn-warm {
+            background: #5A3A2A;
+            color: #F0E0D0;
+            border-color: #8A5A3A;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        .btn-group .btn {
+            flex: 1;
+        }
+
+        .row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 28px;
+        }
+
+        .col {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* ============================================================ */
+        /* STATS — Warm palette                                        */
+        /* ============================================================ */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .stat {
+            border: 1px solid #3A2A1E;
+            padding: 14px 18px;
+            background: rgba(10, 8, 6, 0.3);
+        }
+
+        .stat .num {
+            font-size: 26px;
+            font-weight: 300;
+            letter-spacing: -0.5px;
+            color: #D4C0B0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .stat .label {
+            font-size: 8px;
+            font-weight: 500;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            color: #5A4A3A;
+            margin-top: 2px;
+        }
+
+        /* ============================================================ */
+        /* CHARTS — Warm bars                                          */
+        /* ============================================================ */
+        .chart {
+            border: 1px solid #3A2A1E;
+            background: rgba(10, 8, 6, 0.3);
+            padding: 14px 10px;
+            height: 120px;
+            display: flex;
+            align-items: flex-end;
+            gap: 6px;
+            justify-content: center;
+        }
+
+        .chart .bar {
+            width: 18px;
+            background: #3A2A1E;
+            height: 20px;
+        }
+
+        .chart .bar:nth-child(1) {
+            height: 30px;
+            background: #5A3A2A;
+        }
+        .chart .bar:nth-child(2) {
+            height: 55px;
+            background: #6A4A3A;
+        }
+        .chart .bar:nth-child(3) {
+            height: 80px;
+            background: #8A5A3A;
+        }
+        .chart .bar:nth-child(4) {
+            height: 110px;
+            background: #A07050;
+        }
+        .chart .bar:nth-child(5) {
+            height: 60px;
+            background: #6A4A3A;
+        }
+        .chart .bar:nth-child(6) {
+            height: 40px;
+            background: #5A3A2A;
+        }
+        .chart .bar:nth-child(7) {
+            height: 90px;
+            background: #8A5A3A;
+        }
+        .chart .bar:nth-child(8) {
+            height: 70px;
+            background: #7A4A3A;
+        }
+        .chart .bar:nth-child(9) {
+            height: 100px;
+            background: #906050;
+        }
+        .chart .bar:nth-child(10) {
+            height: 45px;
+            background: #5A3A2A;
+        }
+        .chart .bar:nth-child(11) {
+            height: 75px;
+            background: #7A4A3A;
+        }
+        .chart .bar:nth-child(12) {
+            height: 85px;
+            background: #8A5A3A;
+        }
+
+        .chart .bar.highlight {
+            background: #B08060;
+            box-shadow: 0 0 20px rgba(180, 120, 80, 0.15);
+        }
+
+        .chart-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 7px;
+            letter-spacing: 0.5px;
+            color: #4A3A2A;
+            margin-top: 4px;
+            text-transform: uppercase;
+        }
+
+        /* ============================================================ */
+        /* TABLES                                                       */
+        /* ============================================================ */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+
+        .table th {
+            text-align: left;
+            font-weight: 500;
+            font-size: 8px;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            color: #5A4A3A;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #3A2A1E;
+        }
+
+        .table td {
+            padding: 10px 0;
+            border-bottom: 1px solid #2A1E14;
+            color: #C0B0A0;
+        }
+
+        .table .status {
+            font-size: 8px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            padding: 2px 10px;
+            border: 1px solid #4A3A2A;
+            display: inline-block;
+        }
+
+        .table .status.paid {
+            border-color: #8A6A4A;
+            color: #D4B090;
+        }
+        .table .status.partial {
+            border-color: #B09070;
+            color: #B09070;
+        }
+        .table .status.unpaid {
+            border-color: #4A3A2A;
+            color: #4A3A2A;
+        }
+
+        /* ============================================================ */
+        /* CALENDAR                                                     */
+        /* ============================================================ */
+        .cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 3px;
+        }
+
+        .cal-grid .day {
+            padding: 8px 4px;
+            text-align: center;
+            font-size: 11px;
+            border: 1px solid #2A1E14;
+            background: rgba(10, 8, 6, 0.2);
+            color: #8A7A6A;
+        }
+
+        .cal-grid .day.blank {
+            background: transparent;
+            border-color: transparent;
+        }
+
+        .cal-grid .day.event {
+            border-color: #8A6A4A;
+            background: rgba(60, 40, 30, 0.3);
+            color: #D4C0B0;
+        }
+
+        .cal-grid .day-label {
+            font-size: 8px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: #4A3A2A;
+            border: none;
+            background: transparent;
+            padding-bottom: 4px;
+        }
+
+        .legend {
+            display: flex;
+            gap: 16px;
+            margin-top: 10px;
+            font-size: 8px;
+            color: #5A4A3A;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            flex-wrap: wrap;
+        }
+
+        .legend span::before {
+            content: "● ";
+            font-size: 10px;
+        }
+
+        .legend .c-event {
+            color: #D4B090;
+        }
+        .legend .c-confirmed {
+            color: #B09880;
+        }
+        .legend .c-pending {
+            color: #8A7A6A;
+        }
+        .legend .c-unpaid {
+            color: #4A3A2A;
+        }
+
+        /* ============================================================ */
+        /* TAGS                                                         */
+        /* ============================================================ */
+        .tag {
+            font-size: 7px;
+            font-weight: 500;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            padding: 2px 10px;
+            border: 1px solid #3A2A1E;
+            display: inline-block;
+        }
+
+        .tag-dark {
+            border-color: #8A6A4A;
+            color: #D4B090;
+            background: rgba(60, 40, 30, 0.2);
+        }
+
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .divider {
+            border: none;
+            border-top: 1px solid #2A1E14;
+            margin: 16px 0 12px 0;
+        }
+
+        .text-mono {
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+            color: #5A4A3A;
+        }
+
+        /* ============================================================ */
+        /* BACKEND GRID                                                */
+        /* ============================================================ */
+        .backend-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-top: 10px;
+        }
+
+        .backend-item {
+            border: 1px solid #3A2A1E;
+            padding: 14px 16px;
+            background: rgba(10, 8, 6, 0.3);
+            position: relative;
+        }
+
+        .backend-item .icon {
+            font-size: 18px;
+            display: block;
+            margin-bottom: 4px;
+            opacity: 0.5;
+        }
+
+        .backend-item .name {
+            font-size: 10px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: #B09880;
+        }
+
+        .backend-item .desc {
+            font-size: 9px;
+            color: #5A4A3A;
+            margin-top: 2px;
+        }
+
+        .backend-item .badge-annotation {
+            position: absolute;
+            top: -1px;
+            right: 10px;
+            font-size: 6px;
+            letter-spacing: 1px;
+            color: #3A2A1E;
+            background: #0A0A08;
+            padding: 0 8px;
+            text-transform: uppercase;
+        }
+
+        /* ============================================================ */
+        /* RESPONSIVE                                                   */
+        /* ============================================================ */
+        @media (max-width: 1000px) {
+            .flow-row {
+                grid-template-columns: 120px 1fr;
+            }
+            .row-2 {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            .stats {
+                grid-template-columns: 1fr 1fr;
+            }
+            .grid {
+                gap: 14px;
+            }
+            .backend-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .flow-row {
+                grid-template-columns: 1fr;
+            }
+            .flow-label {
+                border-right: none;
+                border-bottom: 1px solid #2A1E14;
+            }
+            .stats {
+                grid-template-columns: 1fr;
+            }
+            .backend-grid {
+                grid-template-columns: 1fr;
+            }
+            .palette-bar {
+                gap: 6px;
+                padding: 8px 12px;
+            }
+            .palette-swatch .color-hex {
+                display: none;
+            }
+            .card {
+                padding: 14px 14px 18px 14px;
+            }
+            .header-left h1 {
+                font-size: 16px;
+                letter-spacing: 1.5px;
+            }
+            .tech-stack {
+                gap: 4px;
+                padding: 8px 12px;
+            }
+            .tech-tag {
+                font-size: 7px;
+                padding: 2px 8px;
+            }
+            .btn-group {
+                flex-direction: column;
+            }
+            .cal-grid .day {
+                font-size: 9px;
+                padding: 4px 2px;
+            }
+        }
+
+        /* ============================================================ */
+        /* SERVICE BLUEPRINT FLOW — COMPACT VERSION                    */
+        /* ============================================================ */
+        .flow-compact {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+            gap: 2px;
+            margin: 4px 0;
+        }
+
+        .flow-compact .step {
+            font-size: 7px;
+            text-align: center;
+            padding: 6px 4px;
+            border: 1px solid #2A1E14;
+            color: #6A5A4A;
+            background: rgba(10, 8, 6, 0.2);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .flow-compact .step.active {
+            border-color: #8A6A4A;
+            color: #D4C0B0;
+            background: rgba(40, 30, 20, 0.3);
+        }
+
+        .flow-compact .step .icon {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+
+        /* ============================================================ */
+        /* CORNER ACCENT                                               */
+        /* ============================================================ */
+        .corner-accent {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-left: 2px solid #4A3A2A;
+            border-top: 2px solid #4A3A2A;
+            margin-right: 6px;
+        }
+
+        /* Pie chart */
+        .pie-mock {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: conic-gradient(#8A6A4A 0% 48%, #B09070 48% 76%, #4A3A2A 76% 100%);
+            border: 1px solid #3A2A1E;
+        }
+
+        .pie-legend {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            font-size: 9px;
+            color: #8A7A6A;
+        }
+
+        .pie-legend span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .pie-legend .dot {
+            width: 10px;
+            height: 10px;
+            display: inline-block;
+            border: 1px solid #3A2A1E;
+        }
+
+        .pie-legend .dot.green {
+            background: #8A6A4A;
+        }
+        .pie-legend .dot.yellow {
+            background: #B09070;
+        }
+        .pie-legend .dot.gray {
+            background: #4A3A2A;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- ============================================================ -->
+        <!-- COLOR PALETTE BAR (From your screenshot)                     -->
+        <!-- ============================================================ -->
+        <div class="palette-bar">
+            <span class="label">🎨 Palette</span>
+
+            <div class="palette-swatch">
+                <div class="color-box" style="background:#A03A3A;"></div>
+                <span class="color-name">Carmine</span>
+                <span class="color-hex">#A03A3A</span>
+            </div>
+
+            <div class="palette-swatch">
+                <div class="color-box" style="background:#B05040;"></div>
+                <span class="color-name">Cardinal</span>
+                <span class="color-hex">#B05040</span>
+            </div>
+
+            <div class="palette-swatch">
+                <div class="color-box" style="background:#E8E0D8;"></div>
+                <span class="color-name">Milky White</span>
+                <span class="color-hex">#E8E0D8</span>
+            </div>
+
+            <div class="palette-swatch">
+                <div class="color-box" style="background:#D4C4A8;"></div>
+                <span class="color-name">Chamois</span>
+                <span class="color-hex">#D4C4A8</span>
+            </div>
+
+            <div class="palette-swatch">
+                <div class="color-box" style="background:#6A4A30;"></div>
+                <span class="color-name">Sepia</span>
+                <span class="color-hex">#6A4A30</span>
+            </div>
+
+            <div class="palette-swatch">
+                <div class="color-box" style="background:#2A1A0E;"></div>
+                <span class="color-name">Dark Brown</span>
+                <span class="color-hex">#2A1A0E</span>
+            </div>
+
+            <span style="margin-left:auto;font-size:7px;color:#3A2A1E;letter-spacing:0.5px;font-family:Courier New,monospace;">
+                ┃ 6‑color warm palette
+            </span>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- HEADER                                                       -->
+        <!-- ============================================================ -->
+        <div class="header">
+            <div class="header-left">
+                <h1><span class="corner-accent"></span> THE FACTORY AT FRANKLIN, TN</h1>
+                <div class="sub">Event Planner · Service Blueprint + Warm Palette · v0.3</div>
+            </div>
+            <div class="header-right">
+                <span class="badge-version">🔄 Service Blueprint</span>
+                <span class="badge-version">🎨 Warm Industrial</span>
+                <span class="badge-version">🏗️ Islands</span>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- TECH STACK                                                   -->
+        <!-- ============================================================ -->
+        <div class="tech-stack">
+            <span class="label">⚙️ Stack</span>
+            <span class="tech-tag highlight">Astro 5</span>
+            <span class="tech-tag highlight">React 19</span>
+            <span class="tech-tag warm">Tailwind</span>
+            <span class="tech-tag warm">Sanity v3</span>
+            <span class="tech-tag">Cloudflare D1</span>
+            <span class="tech-tag">Pages</span>
+            <span class="tech-tag warm">Stripe</span>
+            <span class="tech-tag">Resend</span>
+            <span class="tech-tag warm">TypeScript</span>
+            <span style="margin-left:auto;font-size:7px;color:#3A2A1E;letter-spacing:1px;font-family:Courier New,monospace;">
+                ┃ ∞ Edge · 0ms Cold Start
+            </span>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- SERVICE BLUEPRINT FLOW (From your screenshot concept)        -->
+        <!-- ============================================================ -->
+        <div class="card" style="margin-bottom:18px;border-color:#4A3A2A;">
+            <div class="card-title">
+                <span>📋 Service Blueprint — Customer Journey</span>
+                <span class="annotation">🧭 Lazyroof‑inspired Flow</span>
+            </div>
+
+            <!-- Customer Journey (Top row) -->
+            <div style="font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:#4A3A2A;margin-bottom:6px;">
+                👤 Customer Journey
+            </div>
+            <div class="flow-compact">
+                <div class="step active"><span class="icon">🔍</span>Browse</div>
+                <div class="step active"><span class="icon">📋</span>Enter Details</div>
+                <div class="step active"><span class="icon">📅</span>Schedule</div>
+                <div class="step active"><span class="icon">👀</span>View Property</div>
+                <div class="step active"><span class="icon">✅</span>Confirm</div>
+                <div class="step active"><span class="icon">📝</span>Sign</div>
+                <div class="step active"><span class="icon">🏠</span>Move In</div>
+            </div>
+
+            <!-- Divider -->
+            <div style="border-top:1px solid #2A1E14;margin:10px 0 8px 0;"></div>
+
+            <!-- Full Blueprint Flow -->
+            <div class="blueprint-flow">
+                <!-- Row 1: Physical Evidence -->
+                <div class="flow-row">
+                    <div class="flow-label">📱 Physical Evidence</div>
+                    <div class="flow-steps">
+                        <span class="flow-step highlight">📱 Ad</span>
+                        <span class="flow-step">🖥️ Webpage / App</span>
+                        <span class="flow-step">📸 Images</span>
+                        <span class="flow-step">📊 Rent / Rating</span>
+                        <span class="flow-step">📋 Availability</span>
+                    </div>
+                </div>
+
+                <!-- Row 2: Customer Actions -->
+                <div class="flow-row">
+                    <div class="flow-label">👤 Customer Actions</div>
+                    <div class="flow-steps">
+                        <span class="flow-step highlight">🔍 Browse Properties</span>
+                        <span class="flow-step action">📝 Enter Details</span>
+                        <span class="flow-step action">📅 Schedule Appointment</span>
+                        <span class="flow-step highlight">👀 Views Property</span>
+                        <span class="flow-step highlight">✅ Confirms Property</span>
+                        <span class="flow-step highlight">📝 Signs Agreement</span>
+                        <span class="flow-step highlight">🏠 Moves In</span>
+                    </div>
+                </div>
+
+                <!-- Row 3: Service Providers -->
+                <div class="flow-row">
+                    <div class="flow-label">👥 Service Providers</div>
+                    <div class="flow-steps">
+                        <span class="flow-step">🏢 Society</span>
+                        <span class="flow-step">🌐 WiFi</span>
+                        <span class="flow-step">🧺 Laundry</span>
+                        <span class="flow-step">🍱 Tiffin</span>
+                        <span class="flow-step highlight">💳 Payments to LZ</span>
+                        <span class="flow-step highlight">💰 Payment to Owner</span>
+                        <span class="flow-step highlight">🤝 LZ Liaison</span>
+                    </div>
+                </div>
+
+                <!-- Row 4: Backend Systems -->
+                <div class="flow-row">
+                    <div class="flow-label">⚙️ Backend Systems</div>
+                    <div class="flow-steps">
+                        <span class="flow-step highlight">🗄️ Added to DB</span>
+                        <span class="flow-step">📞 Contact Owner</span>
+                        <span class="flow-step">✅ Confirms Tenant</span>
+                        <span class="flow-step highlight">⚖️ Legal Arrangement</span>
+                        <span class="flow-step highlight">📋 Property Booked</span>
+                        <span class="flow-step">📝 Owner Signs</span>
+                        <span class="flow-step">📂 Holds Agreement</span>
+                    </div>
+                </div>
+
+                <!-- Row 5: Service Partners -->
+                <div class="flow-row">
+                    <div class="flow-label">🤝 Service Partners</div>
+                    <div class="flow-steps">
+                        <span class="flow-step">🔗 Service Gateway</span>
+                        <span class="flow-step highlight">💰 Payment to Partners</span>
+                        <span class="flow-step highlight">🔄 Database Updated</span>
+                        <span class="flow-step">📊 Service Partners</span>
+                        <span class="flow-step">📋 LZ Liaison</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top:10px;font-size:7px;color:#3A2A1E;letter-spacing:0.5px;font-family:Courier New,monospace;border-top:1px solid #2A1E14;padding-top:8px;display:flex;justify-content:space-between;flex-wrap:wrap;">
+                <span>📌 Concept: Lazyroof‑inspired Service Blueprint</span>
+                <span>🔄 Sync: Sanity ↔ D1 via Webhooks</span>
+                <span>🏗️ Edge‑deployed on Cloudflare</span>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- GRID — Main Content                                          -->
+        <!-- ============================================================ -->
+        <div class="grid">
+
+            <!-- ========================================================= -->
+            <!-- BOOKING FORM (Client)                                    -->
+            <!-- ========================================================= -->
+            <div class="card">
+                <div class="card-title">
+                    <span>📋 Booking Form <span style="color:#5A4A3A;font-weight:300;margin-left:10px;">/book</span></span>
+                    <span class="annotation">⚛️ React Island</span>
+                </div>
+                <div class="row-2">
+                    <div class="col">
+                        <div class="field">
+                            <label>Full Name *</label>
+                            <div class="input active">Jane Doe</div>
+                        </div>
+                        <div class="field">
+                            <label>Email *</label>
+                            <div class="input active">jane@example.com</div>
+                        </div>
+                        <div class="field">
+                            <label>Phone</label>
+                            <div class="input">(555) 123-4567</div>
+                        </div>
+                        <div class="field">
+                            <label>Event Type</label>
+                            <div class="input active">Wedding ▼</div>
+                        </div>
+                        <div class="btn-group">
+                            <div class="btn btn-primary">Next →</div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="field">
+                            <label>Event Date &amp; Time *</label>
+                            <div class="input active">06 / 30 / 2026 &nbsp; 1:00 PM</div>
+                        </div>
+                        <div class="field">
+                            <label>Number of Guests *</label>
+                            <div class="input active">50</div>
+                        </div>
+                        <div class="field">
+                            <label>Estimated Total</label>
+                            <div class="input" style="border-color:#8A6A4A;background:rgba(60,40,30,0.2);font-weight:500;color:#D4B090;">$ 750</div>
+                        </div>
+                        <div class="field">
+                            <label>Additional Notes</label>
+                            <div class="input textarea">[ optional notes ]</div>
+                        </div>
+                        <div class="btn-group">
+                            <div class="btn">← Back</div>
+                            <div class="btn btn-warm">Submit Booking</div>
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-top:12px;font-size:7px;color:#3A2A1E;letter-spacing:0.5px;text-transform:uppercase;border-top:1px solid #2A1E14;padding-top:10px;display:flex;justify-content:space-between;flex-wrap:wrap;">
+                    <span>Two-step · Client Info → Event Details</span>
+                    <span>📡 API: POST /api/booking · Sanity Write</span>
+                </div>
+            </div>
+
+            <!-- ========================================================= -->
+            <!-- CLIENT DASHBOARD                                          -->
+            <!-- ========================================================= -->
+            <div class="card">
+                <div class="card-title">
+                    <span>👤 Client Dashboard <span style="color:#5A4A3A;font-weight:300;margin-left:10px;">/client/dashboard</span></span>
+                    <span class="annotation">🔒 Auth: Booking # + Email</span>
+                </div>
+                <div class="row-2">
+                    <div class="col">
+                        <div style="border:1px solid #3A2A1E;padding:18px;background:rgba(10,8,6,0.3);">
+                            <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #2A1E14;padding-bottom:8px;margin-bottom:10px;">
+                                <span style="font-weight:500;font-size:14px;letter-spacing:0.2px;font-family:Courier New,monospace;color:#D4C0B0;">BK-2026-0001</span>
+                                <span class="tag tag-dark">PENDING</span>
+                            </div>
+                            <div style="font-size:12px;line-height:1.8;color:#B09880;">
+                                <div>Event: <strong style="color:#D4C0B0;">Wedding</strong> · Jun 30, 2026</div>
+                                <div>Guests: <strong style="color:#D4C0B0;">50</strong> · Total: <strong style="color:#D4B090;">$750</strong></div>
+                                <div>Paid: <strong style="color:#5A4A3A;">$0</strong> · Balance: <strong style="color:#B09070;">$750</strong></div>
+                            </div>
+                            <div class="btn-group" style="margin-top:14px;">
+                                <div class="btn btn-warm">💳 Pay Now</div>
+                                <div class="btn">📄 Invoice PDF</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div style="border:1px dashed #4A3A2A;padding:18px;background:rgba(10,8,6,0.2);display:flex;align-items:center;justify-content:center;min-height:100px;color:#4A3A2A;font-size:10px;letter-spacing:0.5px;text-transform:uppercase;">
+                            🎨 Flyer Image Preview <span style="color:#3A2A1E;margin-left:8px;">(Cloudflare R2)</span>
+                        </div>
+                        <div style="font-size:9px;color:#5A4A3A;line-height:1.6;margin-top:4px;font-family:Courier New,monospace;">
+                            📧 jane@example.com &nbsp;·&nbsp; 📞 (555) 123-4567
+                        </div>
+                        <div style="font-size:9px;color:#4A3A2A;">📍 The Factory at Franklin, TN</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================================= -->
+            <!-- ADMIN DASHBOARD                                           -->
+            <!-- ========================================================= -->
+            <div class="card" style="grid-column:span 12;">
+                <div class="card-title">
+                    <span>🔐 Admin Dashboard <span style="color:#5A4A3A;font-weight:300;margin-left:10px;">/admin/dashboard</span></span>
+                    <span class="annotation">📊 D1 Analytics · Real‑time</span>
+                </div>
+
+                <div class="stats">
+                    <div class="stat"><div class="num">$12,450</div><div class="label">Revenue (D1)</div></div>
+                    <div class="stat"><div class="num">48</div><div class="label">Bookings (Sanity)</div></div>
+                    <div class="stat"><div class="num">12</div><div class="label">Upcoming</div></div>
+                    <div class="stat"><div class="num">247</div><div class="label">QR Scans (D1)</div></div>
+                </div>
+
+                <div class="row-2">
+                    <div class="col">
+                        <div style="font-size:8px;font-weight:500;letter-spacing:1px;text-transform:uppercase;color:#5A4A3A;margin-bottom:6px;">Revenue by Month · D1</div>
+                        <div class="chart">
+                            <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                            <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                            <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                        </div>
+                        <div class="chart-label">
+                            <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span>
+                            <span>May</span><span>Jun</span><span>Jul</span><span>Aug</span>
+                            <span>Sep</span><span>Oct</span><span>Nov</span><span>Dec</span>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div style="font-size:8px;font-weight:500;letter-spacing:1px;text-transform:uppercase;color:#5A4A3A;margin-bottom:6px;">Booking Status · Sanity</div>
+                        <div style="border:1px solid #3A2A1E;background:rgba(10,8,6,0.3);padding:16px;display:flex;gap:28px;align-items:center;justify-content:center;height:120px;">
+                            <div class="pie-mock"></div>
+                            <div class="pie-legend">
+                                <span><span class="dot green"></span> Paid (48%)</span>
+                                <span><span class="dot yellow"></span> Pending (28%)</span>
+                                <span><span class="dot gray"></span> Unpaid (24%)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="divider" />
+                <div style="font-size:8px;font-weight:500;letter-spacing:1px;text-transform:uppercase;color:#5A4A3A;margin-bottom:10px;">Recent Bookings · Sanity</div>
+                <table class="table">
+                    <thead><tr><th>Account</th><th>Client</th><th>Event Date</th><th>Status</th></tr></thead>
+                    <tbody>
+                        <tr><td style="font-family:Courier New,monospace;">BK-2026-0012</td><td>Jane Doe</td><td>Jun 30, 2026</td><td><span class="status paid">Paid</span></td></tr>
+                        <tr><td style="font-family:Courier New,monospace;">BK-2026-0011</td><td>John Smith</td><td>Jul 4, 2026</td><td><span class="status partial">Partial</span></td></tr>
+                        <tr><td style="font-family:Courier New,monospace;">BK-2026-0010</td><td>Alice Johnson</td><td>Jul 15, 2026</td><td><span class="status unpaid">Unpaid</span></td></tr>
+                        <tr><td style="font-family:Courier New,monospace;">BK-2026-0009</td><td>Robert Brown</td><td>Jul 22, 2026</td><td><span class="status paid">Paid</span></td></tr>
+                    </tbody>
+                </table>
+                <div style="margin-top:10px;font-size:7px;color:#3A2A1E;letter-spacing:0.5px;text-align:right;text-transform:uppercase;">
+                    🔄 Sync: Sanity → D1 via Webhook
+                </div>
+            </div>
+
+            <!-- ========================================================= -->
+            <!-- BOOKINGS MANAGEMENT                                       -->
+            <!-- ========================================================= -->
+            <div class="card" style="grid-column:span 6;">
+                <div class="card-title">
+                    <span>📋 Bookings <span style="color:#5A4A3A;font-weight:300;margin-left:10px;">/admin</span></span>
+                    <span class="annotation">🔍 GROQ Query</span>
+                </div>
+                <div style="display:flex;gap:10px;margin-bottom:12px;">
+                    <div style="flex:3;border:1px solid #3A2A1E;padding:6px 10px;background:rgba(10,8,6,0.2);font-size:10px;color:#4A3A2A;font-family:Courier New,monospace;">🔍 Search by name or account...</div>
+                    <div style="flex:1;border:1px solid #3A2A1E;padding:6px 10px;background:rgba(10,8,6,0.2);font-size:10px;color:#D4C0B0;">Filter: All ▼</div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:6px;">
+                    <div style="border:1px solid #2A1E14;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;">
+                        <div><span style="font-weight:500;font-size:12px;font-family:Courier New,monospace;color:#D4C0B0;">BK-2026-0012</span> <span style="font-size:10px;color:#5A4A3A;margin-left:10px;">Jane Doe · Jun 30 · 50 guests</span></div>
+                        <span class="tag tag-dark">Paid</span>
+                    </div>
+                    <div style="border:1px solid #2A1E14;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;">
+                        <div><span style="font-weight:500;font-size:12px;font-family:Courier New,monospace;color:#D4C0B0;">BK-2026-0011</span> <span style="font-size:10px;color:#5A4A3A;margin-left:10px;">John Smith · Jul 4 · 75 guests</span></div>
+                        <span class="tag" style="border-color:#B09070;color:#B09070;">Partial</span>
+                    </div>
+                    <div style="border:1px solid #2A1E14;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;">
+                        <div><span style="font-weight:500;font-size:12px;font-family:Courier New,monospace;color:#D4C0B0;">BK-2026-0010</span> <span style="font-size:10px;color:#5A4A3A;margin-left:10px;">Alice J. · Jul 15 · 30 guests</span></div>
+                        <span class="tag" style="border-color:#4A3A2A;color:#4A3A2A;">Unpaid</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================================= -->
+            <!-- CALENDAR                                                 -->
+            <!-- ========================================================= -->
+            <div class="card" style="grid-column:span 6;">
+                <div class="card-title">
+                    <span>📅 Calendar <span style="color:#5A4A3A;font-weight:300;margin-left:10px;">/admin/calendar</span></span>
+                    <span class="annotation">📆 Edge Cache</span>
+                </div>
+                <div style="font-size:15px;font-weight:300;margin-bottom:10px;letter-spacing:-0.3px;color:#D4C0B0;">June 2026</div>
+                <div class="cal-grid">
+                    <div class="day day-label">Mon</div><div class="day day-label">Tue</div>
+                    <div class="day day-label">Wed</div><div class="day day-label">Thu</div>
+                    <div class="day day-label">Fri</div><div class="day day-label">Sat</div>
+                    <div class="day day-label">Sun</div>
+
+                    <div class="day blank"></div><div class="day blank"></div>
+                    <div class="day">1</div><div class="day">2</div><div class="day">3</div><div class="day">4</div><div class="day">5</div>
+                    <div class="day">6</div><div class="day">7</div><div class="day">8</div><div class="day">9</div><div class="day">10</div>
+                    <div class="day">11</div><div class="day">12</div><div class="day">13</div><div class="day">14</div>
+                    <div class="day">15</div><div class="day event">16</div><div class="day">17</div>
+                    <div class="day">18</div><div class="day">19</div><div class="day">20</div><div class="day">21</div>
+                    <div class="day">22</div><div class="day">23</div><div class="day">24</div><div class="day">25</div>
+                    <div class="day">26</div><div class="day">27</div><div class="day">28</div><div class="day">29</div>
+                    <div class="day">30</div>
+                </div>
+                <div class="legend">
+                    <span class="c-event">Event</span>
+                    <span class="c-confirmed">Confirmed</span>
+                    <span class="c-pending">Pending</span>
+                    <span class="c-unpaid">Unpaid</span>
+                </div>
+            </div>
+
+            <!-- ========================================================= -->
+            <!-- BILLS & PAYMENTS                                          -->
+            <!-- ========================================================= -->
+            <div class="card" style="grid-column:span 6;">
+                <div class="card-title">
+                    <span>💰 Bills &amp; Payments <span style="color:#5A4A3A;font-weight:300;margin-left:10px;">/admin/bills</span></span>
+                    <span class="annotation">💳 Stripe Mock</span>
+                </div>
+                <table class="table">
+                    <thead><tr><th>Account</th><th>Client</th><th>Total</th><th>Paid</th><th>Balance</th><th></th></tr></thead>
+                    <tbody>
+                        <tr><td style="font-family:Courier New,monospace;">BK-0012</td><td>Jane Doe</td><td>$750</td><td>$750</td><td style="color:#D4B090;">$0</td><td><span style="font-size:7px;color:#D4B090;">✓ Paid</span></td></tr>
+                        <tr><td style="font-family:Courier New,monospace;">BK-0011</td><td>John Smith</td><td>$1,125</td><td>$500</td><td style="color:#B09070;">$625</td><td><span class="tag" style="border-color:#B09070;color:#B09070;font-size:7px;">Record</span></td></tr>
+                        <tr><td style="font-family:Courier New,monospace;">BK-0010</td><td>Alice J.</td><td>$450</td><td>$0</td><td style="color:#4A3A2A;">$450</td><td><span class="tag" style="border-color:#4A3A2A;color:#4A3A2A;font-size:7px;">Record</span></td></tr>
+                    </tbody>
+                    <tfoot>
+                        <tr><td colspan="6" style="border-top:1px solid #4A3A2A;padding-top:10px;font-weight:500;font-size:12px;color:#D4C0B0;">
+                            Total: $2,325 &nbsp;·&nbsp; Paid: $1,250 &nbsp;·&nbsp; Balance: $1,075
+                        </td></tr>
+                    </tfoot>
+                </table>
+                <div style="margin-top:10px;display:flex;justify-content:flex-end;">
+                    <div class="btn btn-primary" style="padding:6px 16px;font-size:8px;">📊 Summary · D1</div>
+                </div>
+            </div>
+
+            <!-- ========================================================= -->
+            <!-- NEWSLETTER                                                -->
+            <!-- ========================================================= -->
+            <div class="card" style="grid-column:span 6;">
+                <div class="card-title">
+                    <span>📧 Newsletter <span style="color:#5A4A3A;font-weight:300;margin-left:10px;">/admin/newsletter</span></span>
+                    <span class="annotation">📨 Resend</span>
+                </div>
+                <div class="field">
+                    <label>Subject</label>
+                    <div class="input">📧 [ Enter subject line... ]</div>
+                </div>
+                <div class="field" style="margin-top:10px;">
+                    <label>Message (HTML)</label>
+                    <div class="input textarea" style="height:56px;color:#5A4A3A;">
+                        📝 [ Write your HTML email content... ]<br />
+                        <span style="font-size:7px;color:#3A2A1E;">Supports HTML, images, links</span>
+                    </div>
+                </div>
+                <div class="btn-group" style="margin-top:10px;">
+                    <div class="btn btn-warm">✉️ Send</div>
+                    <div class="btn">📅 Schedule</div>
+                    <div style="margin-left:auto;font-size:8px;color:#5A4A3A;letter-spacing:0.5px;text-transform:uppercase;display:flex;align-items:center;gap:6px;">
+                        <span>📊 Subscribers: 247</span>
+                        <span style="color:#3A2A1E;">(Sanity)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================================= -->
+            <!-- BACKEND SYSTEMS — The Blueprint Core                     -->
+            <!-- ========================================================= -->
+            <div class="card" style="grid-column:span 12;background:rgba(16,12,8,0.6);border-color:#4A3A2A;">
+                <div class="card-title">
+                    <span>⚙️ System Architecture · Service Blueprint Engine</span>
+                    <span class="annotation" style="border-color:#4A3A2A;color:#D4C0B0;">∞ Edge · Serverless · Global</span>
+                </div>
+                <div class="backend-grid">
+                    <div class="backend-item" style="border-color:#4A3A2A;">
+                        <span class="badge-annotation">OLTP</span>
+                        <span class="icon">🗄️</span>
+                        <div class="name">Cloudflare D1</div>
+                        <div class="desc">Payments · QR Scans · Analytics · Email Logs</div>
+                        <div style="margin-top:4px;font-size:6px;color:#3A2A1E;font-family:Courier New,monospace;">SQLite · 5M reads/day</div>
+                    </div>
+                    <div class="backend-item" style="border-color:#4A3A2A;">
+                        <span class="badge-annotation">CMS</span>
+                        <span class="icon">📝</span>
+                        <div class="name">Sanity v3</div>
+                        <div class="desc">Bookings · Subscribers · Waitlist · Settings</div>
+                        <div style="margin-top:4px;font-size:6px;color:#3A2A1E;font-family:Courier New,monospace;">GROQ · Real‑time · Live Preview</div>
+                    </div>
+                    <div class="backend-item" style="border-color:#4A3A2A;">
+                        <span class="badge-annotation">Compute</span>
+                        <span class="icon">☁️</span>
+                        <div class="name">Cloudflare Workers</div>
+                        <div class="desc">Serverless functions · Cron jobs · Edge API</div>
+                        <div style="margin-top:4px;font-size:6px;color:#3A2A1E;font-family:Courier New,monospace;">100k req/day · 0ms cold starts</div>
+                    </div>
+                    <div class="backend-item" style="border-color:#4A3A2A;">
+                        <span class="badge-annotation">REST</span>
+                        <span class="icon">🔗</span>
+                        <div class="name">API Routes</div>
+                        <div class="desc">/api/booking · /api/payment · /api/events/[id]/qr</div>
+                        <div style="margin-top:4px;font-size:6px;color:#3A2A1E;font-family:Courier New,monospace;">Astro Endpoints · Serverless</div>
+                    </div>
+                </div>
+
+                <div style="margin-top:14px;padding-top:10px;border-top:1px solid #2A1E14;display:flex;gap:16px;flex-wrap:wrap;font-size:7px;color:#3A2A1E;letter-spacing:0.8px;text-transform:uppercase;font-family:Courier New,monospace;">
+                    <span>🏗️ Islands Architecture (Astro + React)</span>
+                    <span>⚡ Edge Caching (Cloudflare Pages)</span>
+                    <span>🛡️ Row‑Level Security (D1)</span>
+                    <span>📦 Asset Storage (R2)</span>
+                    <span>💳 Payment Intents (Stripe)</span>
+                    <span>📧 Email (Resend)</span>
+                    <span>🎨 Warm Palette (Carmine · Cardinal · Milky White · Chamois · Sepia · Dark Brown)</span>
+                </div>
+            </div>
+
+        </div><!-- /grid -->
+
+        <!-- ============================================================ -->
+        <!-- FOOTER — Blueprint Sign-off                                  -->
+        <!-- ============================================================ -->
+        <div style="margin-top:40px;padding-top:14px;border-top:1px solid #2A1E14;display:flex;justify-content:space-between;font-size:8px;color:#2A1E14;letter-spacing:0.5px;text-transform:uppercase;font-family:Courier New,monospace;flex-wrap:wrap;gap:8px;">
+            <span>🏛️ The Factory at Franklin, TN · Event Planner</span>
+            <span>Service Blueprint + Warm Palette · v0.3 · 2026 · 🚀 Edge‑deployed</span>
+            <span>🎨 Carmine · Cardinal · Milky White · Chamois · Sepia · Dark Brown</span>
+        </div>
+
+    </div><!-- /container -->
+
+</body>
+</html>

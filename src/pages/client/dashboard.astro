@@ -1,0 +1,103 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { createClient } from '@sanity/client';
+
+const id = Astro.url.searchParams.get('id');
+
+let booking: any = null;
+let error = false;
+
+if (id) {
+  try {
+    const client = createClient({
+      projectId: 'maowljqt',
+      dataset: 'production',
+      apiVersion: '2024-12-30',
+      useCdn: false,
+      token: import.meta.env.SANITY_TOKEN,
+    });
+    booking = await client.getDocument(id);
+  } catch (e) {
+    error = true;
+  }
+}
+---
+
+<Layout title="Booking Confirmed">
+  <div class="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+    {!id || error ? (
+      <div class="text-center">
+        <h1 class="text-2xl font-bold text-red-600">Booking not found</h1>
+        <a href="/book" class="mt-4 inline-block text-primary underline">Make a new booking</a>
+      </div>
+    ) : booking ? (
+      <div class="max-w-lg w-full bg-white rounded-xl shadow-lg p-8 space-y-6">
+        <div class="text-center">
+          <div class="text-5xl mb-3">🎉</div>
+          <h1 class="text-3xl font-bold text-gray-800">Booking Confirmed!</h1>
+          <p class="text-gray-500 mt-1">We'll be in touch within 24 hours.</p>
+        </div>
+
+        <div class="bg-gray-50 rounded-lg p-4 space-y-3 text-sm">
+          <div class="flex justify-between">
+            <span class="font-medium text-gray-600">Account #</span>
+            <span class="font-mono font-bold text-gray-800">{booking.accountNumber}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="font-medium text-gray-600">Name</span>
+            <span class="text-gray-800">{booking.clientName}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="font-medium text-gray-600">Email</span>
+            <span class="text-gray-800">{booking.email}</span>
+          </div>
+          {booking.phone && (
+            <div class="flex justify-between">
+              <span class="font-medium text-gray-600">Phone</span>
+              <span class="text-gray-800">{booking.phone}</span>
+            </div>
+          )}
+          <div class="flex justify-between">
+            <span class="font-medium text-gray-600">Event Type</span>
+            <span class="text-gray-800 capitalize">{booking.eventType}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="font-medium text-gray-600">Event Date</span>
+            <span class="text-gray-800">{booking.eventDate}</span>
+          </div>
+          {(booking.startTime || booking.endTime) && (
+            <div class="flex justify-between">
+              <span class="font-medium text-gray-600">Time</span>
+              <span class="text-gray-800">{booking.startTime} – {booking.endTime}</span>
+            </div>
+          )}
+          <div class="flex justify-between">
+            <span class="font-medium text-gray-600">Guests</span>
+            <span class="text-gray-800">{booking.guestCount}</span>
+          </div>
+          <div class="border-t pt-3 flex justify-between font-bold">
+            <span class="text-gray-700">Estimated Total</span>
+            <span class="text-green-600">${booking.totalPrice}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="font-medium text-gray-600">Payment Status</span>
+            <span class={`capitalize font-semibold ${booking.paymentStatus === 'paid' ? 'text-green-600' : 'text-yellow-600'}`}>
+              {booking.paymentStatus}
+            </span>
+          </div>
+        </div>
+
+        {booking.notes && (
+          <div>
+            <p class="text-sm font-medium text-gray-600 mb-1">Notes</p>
+            <p class="text-sm text-gray-700 bg-gray-50 rounded-lg p-3">{booking.notes}</p>
+          </div>
+        )}
+
+        <a href="/" class="block text-center text-primary underline text-sm">← Back to Home</a>
+      </div>
+    ) : (
+      <div class="text-center text-gray-500">Loading...</div>
+    )}
+  </div>
+</Layout>
