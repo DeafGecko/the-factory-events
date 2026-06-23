@@ -10,8 +10,8 @@
     "studio:deploy": "sanity deploy"
   },
 "dependencies": {
-    "astro": "5.6.0",
-    "@astrojs/cloudflare": "13.7.0",
+    "astro": "4.16.0",
+    "@astrojs/cloudflare": "11.2.0",
     "@astrojs/react": "3.6.0",
     "@aws-sdk/client-s3": "3.758.0",
     "@emotion/react": "11.14.0",
