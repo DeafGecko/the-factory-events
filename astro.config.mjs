@@ -4,8 +4,6 @@ import cloudflare from '@astrojs/cloudflare';
 
 export default defineConfig({
   output: 'server',
-  adapter: cloudflare({
-    // No platformProxy in production
-  }),
+  adapter: cloudflare(),
   integrations: [react()],
 });
