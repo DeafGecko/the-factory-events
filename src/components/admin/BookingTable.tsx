@@ -1,5 +1,5 @@
 // src/components/admin/BookingTable.tsx
-// Full booking table with search, filter, edit, delete
+// Swiss-Industrial styled booking table with search, filter, edit, delete
 
 import { useState, useMemo } from 'react';
 
@@ -30,7 +30,6 @@ export default function BookingTable({ initialBookings }: Props) {
   const [loading, setLoading] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-  // Filter and search logic
   const filteredBookings = useMemo(() => {
     return bookings.filter((b) => {
       const matchesSearch =
@@ -44,7 +43,6 @@ export default function BookingTable({ initialBookings }: Props) {
     });
   }, [bookings, search, filter]);
 
-  // Delete handler
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this booking? This action cannot be undone.')) return;
     setLoading(true);
@@ -64,7 +62,6 @@ export default function BookingTable({ initialBookings }: Props) {
     }
   };
 
-  // Bulk delete
   const handleBulkDelete = async () => {
     if (selectedIds.length === 0) return;
     if (!confirm(`Delete ${selectedIds.length} selected bookings?`)) return;
@@ -102,124 +99,153 @@ export default function BookingTable({ initialBookings }: Props) {
   const getStatusStyles = (status: string) => {
     switch (status) {
       case 'paid':
-        return 'bg-green-100 text-green-800 border-green-200';
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
       case 'partial':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+        return 'bg-amber-50 text-amber-700 border-amber-200';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return 'bg-gray-50 text-gray-600 border-gray-200';
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'paid':
+        return 'Paid';
+      case 'partial':
+        return 'Partial';
+      default:
+        return 'Unpaid';
     }
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-card p-6 border border-[#e8e4dc]/50">
-      {/* Search and Filter Bar */}
-      <div className="flex flex-wrap gap-4 mb-6">
-        <div className="flex-1 min-w-[200px]">
-          <input
-            type="text"
-            placeholder="Search by name, account, or email..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full border border-[#e8e4dc] rounded-md px-4 py-2.5 bg-white focus:outline-none focus:ring-1 focus:ring-[#1c1c1e] text-sm"
-          />
+    <div className="bg-white rounded-lg border border-[#e8e4dc] shadow-sm overflow-hidden">
+      {/* Header with search and filter */}
+      <div className="p-5 border-b border-[#e8e4dc] bg-[#faf9f7]">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex-1 min-w-[220px]">
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#b0a898] text-sm">🔍</span>
+              <input
+                type="text"
+                placeholder="Search by name, account, or email..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-9 pr-4 py-2.5 border border-[#e8e4dc] rounded-md bg-white text-sm text-[#1c1c1e] placeholder:text-[#b0a898] focus:outline-none focus:ring-1 focus:ring-[#1c1c1e] transition"
+              />
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="border border-[#e8e4dc] rounded-md px-4 py-2.5 bg-white text-sm text-[#1c1c1e] focus:outline-none focus:ring-1 focus:ring-[#1c1c1e] transition"
+            >
+              <option value="all">All Status</option>
+              <option value="paid">Paid</option>
+              <option value="partial">Partial</option>
+              <option value="unpaid">Unpaid</option>
+            </select>
+            {selectedIds.length > 0 && (
+              <button
+                onClick={handleBulkDelete}
+                disabled={loading}
+                className="px-4 py-2.5 rounded-md bg-[#b91c1c] text-white hover:bg-[#991b1b] transition text-sm disabled:opacity-50"
+              >
+                Delete {selectedIds.length} selected
+              </button>
+            )}
+          </div>
         </div>
-        <select
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="border border-[#e8e4dc] rounded-md px-4 py-2.5 bg-white focus:outline-none focus:ring-1 focus:ring-[#1c1c1e] text-sm"
-        >
-          <option value="all">All Status</option>
-          <option value="paid">Paid</option>
-          <option value="partial">Partial</option>
-          <option value="unpaid">Unpaid</option>
-        </select>
-        {selectedIds.length > 0 && (
-          <button
-            onClick={handleBulkDelete}
-            disabled={loading}
-            className="px-4 py-2.5 rounded-md bg-red-600 text-white hover:bg-red-700 transition text-sm disabled:opacity-50"
-          >
-            Delete {selectedIds.length} selected
-          </button>
-        )}
       </div>
 
-      {/* Bookings Table */}
+      {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-[#e8e4dc]/60">
-              <th className="py-3 pr-2 w-8">
+            <tr className="border-b border-[#e8e4dc] bg-[#f5f3ef]">
+              <th className="py-3.5 px-3 w-8">
                 <input
                   type="checkbox"
                   checked={selectedIds.length === filteredBookings.length && filteredBookings.length > 0}
                   onChange={toggleSelectAll}
-                  className="rounded border-gray-300"
+                  className="rounded border-[#d0c8bc] accent-[#1c1c1e]"
                 />
               </th>
-              <th className="text-left py-3 px-2 font-medium text-[#8e8e93] text-xs uppercase tracking-wider">Account</th>
-              <th className="text-left py-3 px-2 font-medium text-[#8e8e93] text-xs uppercase tracking-wider">Client</th>
-              <th className="text-left py-3 px-2 font-medium text-[#8e8e93] text-xs uppercase tracking-wider">Email</th>
-              <th className="text-left py-3 px-2 font-medium text-[#8e8e93] text-xs uppercase tracking-wider">Event Date</th>
-              <th className="text-left py-3 px-2 font-medium text-[#8e8e93] text-xs uppercase tracking-wider">Guests</th>
-              <th className="text-left py-3 px-2 font-medium text-[#8e8e93] text-xs uppercase tracking-wider">Total</th>
-              <th className="text-left py-3 px-2 font-medium text-[#8e8e93] text-xs uppercase tracking-wider">Status</th>
-              <th className="text-left py-3 px-2 font-medium text-[#8e8e93] text-xs uppercase tracking-wider">Actions</th>
+              <th className="text-left py-3.5 px-3 font-medium text-[#8a7a6a] text-[11px] uppercase tracking-[0.8px]">Account</th>
+              <th className="text-left py-3.5 px-3 font-medium text-[#8a7a6a] text-[11px] uppercase tracking-[0.8px]">Client</th>
+              <th className="text-left py-3.5 px-3 font-medium text-[#8a7a6a] text-[11px] uppercase tracking-[0.8px] hidden md:table-cell">Email</th>
+              <th className="text-left py-3.5 px-3 font-medium text-[#8a7a6a] text-[11px] uppercase tracking-[0.8px] hidden lg:table-cell">Event Date</th>
+              <th className="text-left py-3.5 px-3 font-medium text-[#8a7a6a] text-[11px] uppercase tracking-[0.8px] hidden sm:table-cell">Guests</th>
+              <th className="text-left py-3.5 px-3 font-medium text-[#8a7a6a] text-[11px] uppercase tracking-[0.8px] hidden md:table-cell">Total</th>
+              <th className="text-left py-3.5 px-3 font-medium text-[#8a7a6a] text-[11px] uppercase tracking-[0.8px]">Status</th>
+              <th className="text-left py-3.5 px-3 font-medium text-[#8a7a6a] text-[11px] uppercase tracking-[0.8px]">Actions</th>
             </tr>
           </thead>
           <tbody>
             {filteredBookings.length === 0 ? (
               <tr>
-                <td colSpan={9} className="py-8 text-center text-[#8e8e93]">
-                  No bookings found matching your criteria.
+                <td colSpan={9} className="py-12 text-center text-[#b0a898]">
+                  <div className="text-4xl mb-3">📭</div>
+                  <p className="text-sm">No bookings found matching your criteria.</p>
                 </td>
               </tr>
             ) : (
-              filteredBookings.map((b) => (
-                <tr key={b._id} className="border-b border-[#e8e4dc]/30 hover:bg-gray-50 transition">
-                  <td className="py-3 pr-2">
+              filteredBookings.map((b, index) => (
+                <tr
+                  key={b._id}
+                  className={`border-b border-[#f0ece6] hover:bg-[#faf9f7] transition ${
+                    index % 2 === 0 ? 'bg-white' : 'bg-[#fcfbfa]'
+                  }`}
+                >
+                  <td className="py-3 px-3">
                     <input
                       type="checkbox"
                       checked={selectedIds.includes(b._id)}
                       onChange={() => toggleSelect(b._id)}
-                      className="rounded border-gray-300"
+                      className="rounded border-[#d0c8bc] accent-[#1c1c1e]"
                     />
                   </td>
-                  <td className="py-3 px-2 font-mono text-sm text-[#1c1c1e]">{b.accountNumber}</td>
-                  <td className="py-3 px-2 font-medium text-[#1c1c1e]">{b.clientName}</td>
-                  <td className="py-3 px-2 text-[#555]">{b.email}</td>
-                  <td className="py-3 px-2 text-[#555]">
+                  <td className="py-3 px-3 font-mono text-[13px] text-[#1c1c1e] tracking-[0.2px]">{b.accountNumber}</td>
+                  <td className="py-3 px-3 font-medium text-[#1c1c1e]">{b.clientName}</td>
+                  <td className="py-3 px-3 text-[#6a5a4a] hidden md:table-cell">{b.email}</td>
+                  <td className="py-3 px-3 text-[#6a5a4a] hidden lg:table-cell">
                     {new Date(b.eventDate).toLocaleDateString('en-US', {
                       month: 'short',
                       day: 'numeric',
                       year: 'numeric',
                     })}
                   </td>
-                  <td className="py-3 px-2 text-[#555]">{b.guestCount}</td>
-                  <td className="py-3 px-2 font-medium text-[#1c1c1e]">
+                  <td className="py-3 px-3 text-[#6a5a4a] hidden sm:table-cell">{b.guestCount}</td>
+                  <td className="py-3 px-3 font-medium text-[#1c1c1e] hidden md:table-cell">
                     ${(b.totalPrice || 0).toFixed(2)}
                   </td>
-                  <td className="py-3 px-2">
+                  <td className="py-3 px-3">
                     <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusStyles(
+                      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${getStatusStyles(
                         b.paymentStatus
                       )}`}
                     >
-                      {b.paymentStatus || 'unpaid'}
+                      <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
+                        b.paymentStatus === 'paid' ? 'bg-emerald-500' :
+                        b.paymentStatus === 'partial' ? 'bg-amber-500' :
+                        'bg-gray-400'
+                      }`} />
+                      {getStatusLabel(b.paymentStatus)}
                     </span>
                   </td>
-                  <td className="py-3 px-2">
-                    <div className="flex items-center gap-2">
+                  <td className="py-3 px-3">
+                    <div className="flex items-center gap-1">
                       <a
                         href={`/admin/edit/${b._id}`}
-                        className="text-[#6B6B6B] hover:text-[#1c1c1e] transition text-sm underline-offset-2 hover:underline"
+                        className="px-3 py-1.5 text-[#6a5a4a] hover:text-[#1c1c1e] hover:bg-[#f0ece6] rounded-md transition text-xs font-medium"
                       >
                         Edit
                       </a>
                       <button
                         onClick={() => handleDelete(b._id)}
                         disabled={loading}
-                        className="text-red-500 hover:text-red-700 transition text-sm disabled:opacity-50"
+                        className="px-3 py-1.5 text-[#b0a898] hover:text-[#b91c1c] hover:bg-[#fef2f2] rounded-md transition text-xs font-medium disabled:opacity-50"
                       >
                         Delete
                       </button>
@@ -232,16 +258,26 @@ export default function BookingTable({ initialBookings }: Props) {
         </table>
       </div>
 
-      {/* Footer stats */}
-      <div className="mt-4 pt-4 border-t border-[#e8e4dc]/40 flex justify-between text-sm text-[#8e8e93] flex-wrap gap-2">
-        <span>
-          Showing {filteredBookings.length} of {bookings.length} bookings
+      {/* Footer */}
+      <div className="px-5 py-4 border-t border-[#e8e4dc] bg-[#faf9f7] flex flex-wrap justify-between items-center gap-3">
+        <span className="text-sm text-[#8a7a6a]">
+          Showing <strong className="text-[#1c1c1e]">{filteredBookings.length}</strong> of{' '}
+          <strong className="text-[#1c1c1e]">{bookings.length}</strong> bookings
         </span>
-        <span>
-          Paid: {bookings.filter((b) => b.paymentStatus === 'paid').length} &nbsp;·&nbsp;
-          Partial: {bookings.filter((b) => b.paymentStatus === 'partial').length} &nbsp;·&nbsp;
-          Unpaid: {bookings.filter((b) => b.paymentStatus !== 'paid' && b.paymentStatus !== 'partial').length}
-        </span>
+        <div className="flex items-center gap-4 text-sm text-[#8a7a6a]">
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            Paid: {bookings.filter((b) => b.paymentStatus === 'paid').length}
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-amber-500" />
+            Partial: {bookings.filter((b) => b.paymentStatus === 'partial').length}
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-gray-400" />
+            Unpaid: {bookings.filter((b) => b.paymentStatus !== 'paid' && b.paymentStatus !== 'partial').length}
+          </span>
+        </div>
       </div>
     </div>
   );

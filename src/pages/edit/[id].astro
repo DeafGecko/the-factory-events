@@ -1,0 +1,76 @@
+---
+// src/pages/admin/edit/[id].astro
+// Edit Booking Page – fetches booking by ID and renders edit form
+
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { sanityClient } from '../../../lib/sanity';
+import BookingEditForm from '../../../components/admin/BookingEditForm';
+
+// Get the booking ID from the URL
+const { id } = Astro.params;
+
+if (!id) {
+  return Astro.redirect('/admin');
+}
+
+// Fetch the booking from Sanity
+const booking = await sanityClient.fetch(`
+  *[_type == "booking" && _id == $id][0] {
+    _id,
+    accountNumber,
+    clientName,
+    email,
+    phone,
+    eventDate,
+    eventType,
+    guestCount,
+    totalPrice,
+    amountPaid,
+    paymentStatus,
+    notes,
+    createdAt
+  }
+`, { id });
+
+// If booking doesn't exist, redirect to bookings list
+if (!booking) {
+  return Astro.redirect('/admin');
+}
+
+// Format the event date for the datetime-local input
+const formattedEventDate = booking.eventDate 
+  ? new Date(booking.eventDate).toISOString().slice(0, 16)
+  : '';
+---
+
+<AdminLayout title="Edit Booking">
+  <div class="max-w-3xl mx-auto">
+    <!-- Header -->
+    <div class="mb-6 flex justify-between items-center flex-wrap gap-4">
+      <div>
+        <h2 class="text-xl font-light tracking-wide">Edit Booking</h2>
+        <p class="text-sm text-[#8e8e93]">
+          {booking.accountNumber} · {booking.clientName}
+        </p>
+      </div>
+      <div class="flex gap-3">
+        <a
+          href="/admin"
+          class="px-6 py-2.5 rounded-md border border-[#e8e4dc] hover:bg-gray-50 transition text-sm"
+        >
+          ← Back to Bookings
+        </a>
+        <a
+          href={`/admin/view/${booking._id}`}
+          target="_blank"
+          class="px-6 py-2.5 rounded-md bg-[#1c1c1e] text-white hover:bg-[#2c2c2e] transition text-sm"
+        >
+          View Booking
+        </a>
+      </div>
+    </div>
+
+    <!-- Edit Form (React component) -->
+    <BookingEditForm client:load booking={booking} formattedEventDate={formattedEventDate} />
+  </div>
+</AdminLayout>

@@ -9,8 +9,7 @@
     "studio": "sanity dev --port=3333",
     "studio:deploy": "sanity deploy"
   },
-"dependencies": {
-    "astro": "4.16.0",
+  "dependencies": {
     "@astrojs/cloudflare": "11.2.0",
     "@astrojs/react": "3.6.0",
     "@aws-sdk/client-s3": "3.758.0",
@@ -20,7 +19,8 @@
     "@sanity/astro": "3.4.1",
     "@sanity/client": "6.29.1",
     "@stripe/stripe-js": "7.4.0",
-    "@tailwindcss/vite": "4.3.1",
+    "@tailwindcss/vite": "^4.3.1",
+    "astro": "4.16.0",
     "canvas-confetti": "1.9.4",
     "chart.js": "4.4.8",
     "lucide-react": "0.503.0",
