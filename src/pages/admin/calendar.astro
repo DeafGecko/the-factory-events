@@ -1,0 +1,37 @@
+---
+// src/pages/admin/calendar.astro
+// Calendar View – shows all bookings on a monthly grid
+
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { sanityClient } from '../../lib/sanity';
+import CalendarGrid from '../../components/admin/CalendarGrid';
+
+// Fetch all bookings
+const bookings = await sanityClient.fetch(`
+  *[_type == "booking"] {
+      _id,
+      accountNumber,
+      clientName,
+      eventDate,
+      paymentStatus,
+      bookingType,
+      assignedSpace,
+      guestCount
+      }
+`);
+
+// Format dates for the calendar
+const formattedBookings = bookings.map((b: any) => ({
+      ...b,
+      eventDate: new Date(b.eventDate).toISOString(),
+}));
+---
+
+<AdminLayout title="Calendar">
+      <div class="mb-6">
+            <h2 class="text-xl font-light tracking-wide">Event Calendar</h2>
+            <p class="text-sm text-[#8e8e93]">View all bookings by date</p>
+      </div>
+
+      <CalendarGrid client:load bookings={formattedBookings} />
+</AdminLayout>
