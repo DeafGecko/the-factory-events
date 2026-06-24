@@ -1,0 +1,78 @@
+---
+// src/pages/admin/bills.astro
+// Bills & Payments – financial overview and payment recording
+
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { sanityClient } from "../../lib/sanity";
+import BillsTable from "../../components/admin/BillsTable";
+import { 
+      DollarSign, 
+      CheckCircle, 
+      AlertCircle 
+} from 'lucide-react';
+
+
+// Fetch all bookings with financial fields
+const bookings = await sanityClient.fetch(`
+  *[_type == "booking"] | order(createdAt desc) {
+      _id,
+      accountNumber,
+      clientName,
+      email,
+      totalPrice,
+      amountPaid,
+      paymentStatus,
+      eventDate,
+      bookingType,
+      assignedSpace
+      }
+`);
+
+// Calculate totals
+const totalRevenue = bookings.reduce((sum, b) => sum + (b.totalPrice || 0), 0);
+const totalPaid = bookings.reduce((sum, b) => sum + (b.amountPaid || 0), 0);
+const totalOutstanding = totalRevenue - totalPaid;
+---
+
+<AdminLayout title="Bills & Payments">
+<!-- Summary Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
+            <div class="card p-6 flex items-start gap-4">
+                  <div class="p-3 rounded-lg bg-[#f0ece6] text-[#6a5a4a]">
+                        <DollarSign class="w-5 h-5" />
+                  </div>
+            <div>
+                  <p class="text-sm text-[#8e8e93] uppercase tracking-wider">
+                  Total Revenue
+                  </p>
+                  
+                  <p class="text-2xl font-light">${totalRevenue.toFixed(2)}</p>
+            </div>
+      </div>
+      <div class="card p-6 flex items-start gap-4">
+            <div class="p-3 rounded-lg bg-[#f0ece6] text-[#6a5a4a]">
+                  <CheckCircle class="w-5 h-5" />
+            </div>
+      <div>
+        <p class="text-sm text-[#8e8e93] uppercase tracking-wider">
+          Total Paid
+        </p>
+        <p class="text-2xl font-light">${totalPaid.toFixed(2)}</p>
+      </div>
+    </div>
+    <div class="card p-6 flex items-start gap-4">
+      <div class="p-3 rounded-lg bg-[#f0ece6] text-[#6a5a4a]">
+        <AlertCircle class="w-5 h-5" />
+      </div>
+      <div>
+        <p class="text-sm text-[#8e8e93] uppercase tracking-wider">
+          Outstanding
+        </p>
+        <p class="text-2xl font-light">${totalOutstanding.toFixed(2)}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bills Table -->
+  <BillsTable client:load initialBookings={bookings} />
+</AdminLayout>
