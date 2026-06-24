@@ -1,8 +1,5 @@
 export const prerender = false;
 
-// Import the virtual module statically (lets Vite resolve it)
-import { env } from 'cloudflare:workers';
-
 export async function GET() {
   try {
     // Access the D1 binding
