@@ -1,7 +1,8 @@
 // src/components/admin/BookingTable.tsx
-// Swiss-Industrial styled booking table with search, filter, edit, delete
+// Polished booking table with Lucide icons
 
 import { useState, useMemo } from 'react';
+import { Search, Inbox, Trash2, Edit } from 'lucide-react';
 
 interface Booking {
   _id: string;
@@ -109,54 +110,48 @@ export default function BookingTable({ initialBookings }: Props) {
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'paid':
-        return 'Paid';
-      case 'partial':
-        return 'Partial';
-      default:
-        return 'Unpaid';
+      case 'paid': return 'Paid';
+      case 'partial': return 'Partial';
+      default: return 'Unpaid';
     }
   };
 
   return (
-    <div className="bg-white rounded-lg border border-[#e8e4dc] shadow-sm overflow-hidden">
-      {/* Header with search and filter */}
-      <div className="p-5 border-b border-[#e8e4dc] bg-[#faf9f7]">
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="flex-1 min-w-[220px]">
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#b0a898] text-sm">🔍</span>
-              <input
-                type="text"
-                placeholder="Search by name, account, or email..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-9 pr-4 py-2.5 border border-[#e8e4dc] rounded-md bg-white text-sm text-[#1c1c1e] placeholder:text-[#b0a898] focus:outline-none focus:ring-1 focus:ring-[#1c1c1e] transition"
-              />
-            </div>
+    <div className="bg-white rounded-xl border border-[#e8e4dc] shadow-sm overflow-hidden">
+      {/* Toolbar */}
+      <div className="px-6 py-4 border-b border-[#e8e4dc] bg-[#faf9f7] flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-3 flex-1">
+          <div className="relative flex-1 min-w-[200px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#b0a898] w-4 h-4" />
+            <input
+              type="text"
+              placeholder="Search by name, account, or email..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 border border-[#e8e4dc] rounded-lg bg-white text-sm placeholder:text-[#b0a898] focus:outline-none focus:ring-1 focus:ring-[#1c1c1e] transition"
+            />
           </div>
-          <div className="flex items-center gap-3">
-            <select
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-              className="border border-[#e8e4dc] rounded-md px-4 py-2.5 bg-white text-sm text-[#1c1c1e] focus:outline-none focus:ring-1 focus:ring-[#1c1c1e] transition"
-            >
-              <option value="all">All Status</option>
-              <option value="paid">Paid</option>
-              <option value="partial">Partial</option>
-              <option value="unpaid">Unpaid</option>
-            </select>
-            {selectedIds.length > 0 && (
-              <button
-                onClick={handleBulkDelete}
-                disabled={loading}
-                className="px-4 py-2.5 rounded-md bg-[#b91c1c] text-white hover:bg-[#991b1b] transition text-sm disabled:opacity-50"
-              >
-                Delete {selectedIds.length} selected
-              </button>
-            )}
-          </div>
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="border border-[#e8e4dc] rounded-lg px-4 py-2 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-[#1c1c1e]"
+          >
+            <option value="all">All Status</option>
+            <option value="paid">Paid</option>
+            <option value="partial">Partial</option>
+            <option value="unpaid">Unpaid</option>
+          </select>
         </div>
+        {selectedIds.length > 0 && (
+          <button
+            onClick={handleBulkDelete}
+            disabled={loading}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition text-sm disabled:opacity-50"
+          >
+            <Trash2 className="w-4 h-4" />
+            Delete {selectedIds.length} selected
+          </button>
+        )}
       </div>
 
       {/* Table */}
@@ -172,32 +167,27 @@ export default function BookingTable({ initialBookings }: Props) {
                   className="rounded border-[#d0c8bc] accent-[#1c1c1e]"
                 />
               </th>
-              <th className="text-left py-3.5 px-3 font-medium text-[#8a7a6a] text-[11px] uppercase tracking-[0.8px]">Account</th>
-              <th className="text-left py-3.5 px-3 font-medium text-[#8a7a6a] text-[11px] uppercase tracking-[0.8px]">Client</th>
-              <th className="text-left py-3.5 px-3 font-medium text-[#8a7a6a] text-[11px] uppercase tracking-[0.8px] hidden md:table-cell">Email</th>
-              <th className="text-left py-3.5 px-3 font-medium text-[#8a7a6a] text-[11px] uppercase tracking-[0.8px] hidden lg:table-cell">Event Date</th>
-              <th className="text-left py-3.5 px-3 font-medium text-[#8a7a6a] text-[11px] uppercase tracking-[0.8px] hidden sm:table-cell">Guests</th>
-              <th className="text-left py-3.5 px-3 font-medium text-[#8a7a6a] text-[11px] uppercase tracking-[0.8px] hidden md:table-cell">Total</th>
-              <th className="text-left py-3.5 px-3 font-medium text-[#8a7a6a] text-[11px] uppercase tracking-[0.8px]">Status</th>
-              <th className="text-left py-3.5 px-3 font-medium text-[#8a7a6a] text-[11px] uppercase tracking-[0.8px]">Actions</th>
+              <th className="text-left py-3.5 px-3 font-semibold text-[#8a7a6a] text-[10px] uppercase tracking-[0.8px]">Account</th>
+              <th className="text-left py-3.5 px-3 font-semibold text-[#8a7a6a] text-[10px] uppercase tracking-[0.8px]">Client</th>
+              <th className="text-left py-3.5 px-3 font-semibold text-[#8a7a6a] text-[10px] uppercase tracking-[0.8px] hidden md:table-cell">Email</th>
+              <th className="text-left py-3.5 px-3 font-semibold text-[#8a7a6a] text-[10px] uppercase tracking-[0.8px] hidden lg:table-cell">Date</th>
+              <th className="text-left py-3.5 px-3 font-semibold text-[#8a7a6a] text-[10px] uppercase tracking-[0.8px] hidden sm:table-cell">Guests</th>
+              <th className="text-left py-3.5 px-3 font-semibold text-[#8a7a6a] text-[10px] uppercase tracking-[0.8px] hidden md:table-cell">Total</th>
+              <th className="text-left py-3.5 px-3 font-semibold text-[#8a7a6a] text-[10px] uppercase tracking-[0.8px]">Status</th>
+              <th className="text-left py-3.5 px-3 font-semibold text-[#8a7a6a] text-[10px] uppercase tracking-[0.8px]">Actions</th>
             </tr>
           </thead>
           <tbody>
             {filteredBookings.length === 0 ? (
               <tr>
                 <td colSpan={9} className="py-12 text-center text-[#b0a898]">
-                  <div className="text-4xl mb-3">📭</div>
-                  <p className="text-sm">No bookings found matching your criteria.</p>
+                  <Inbox className="w-12 h-12 mx-auto mb-3 text-[#b0a898]" />
+                  <p className="text-sm">No bookings found.</p>
                 </td>
               </tr>
             ) : (
-              filteredBookings.map((b, index) => (
-                <tr
-                  key={b._id}
-                  className={`border-b border-[#f0ece6] hover:bg-[#faf9f7] transition ${
-                    index % 2 === 0 ? 'bg-white' : 'bg-[#fcfbfa]'
-                  }`}
-                >
+              filteredBookings.map((b) => (
+                <tr key={b._id} className="border-b border-[#f0ece6] hover:bg-[#faf9f7] transition">
                   <td className="py-3 px-3">
                     <input
                       type="checkbox"
@@ -206,7 +196,7 @@ export default function BookingTable({ initialBookings }: Props) {
                       className="rounded border-[#d0c8bc] accent-[#1c1c1e]"
                     />
                   </td>
-                  <td className="py-3 px-3 font-mono text-[13px] text-[#1c1c1e] tracking-[0.2px]">{b.accountNumber}</td>
+                  <td className="py-3 px-3 font-mono text-xs text-[#1c1c1e]">{b.accountNumber}</td>
                   <td className="py-3 px-3 font-medium text-[#1c1c1e]">{b.clientName}</td>
                   <td className="py-3 px-3 text-[#6a5a4a] hidden md:table-cell">{b.email}</td>
                   <td className="py-3 px-3 text-[#6a5a4a] hidden lg:table-cell">
@@ -221,11 +211,7 @@ export default function BookingTable({ initialBookings }: Props) {
                     ${(b.totalPrice || 0).toFixed(2)}
                   </td>
                   <td className="py-3 px-3">
-                    <span
-                      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${getStatusStyles(
-                        b.paymentStatus
-                      )}`}
-                    >
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${getStatusStyles(b.paymentStatus)}`}>
                       <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
                         b.paymentStatus === 'paid' ? 'bg-emerald-500' :
                         b.paymentStatus === 'partial' ? 'bg-amber-500' :
@@ -238,15 +224,17 @@ export default function BookingTable({ initialBookings }: Props) {
                     <div className="flex items-center gap-1">
                       <a
                         href={`/admin/edit/${b._id}`}
-                        className="px-3 py-1.5 text-[#6a5a4a] hover:text-[#1c1c1e] hover:bg-[#f0ece6] rounded-md transition text-xs font-medium"
+                        className="flex items-center gap-1 px-3 py-1.5 text-[#6a5a4a] hover:text-[#1c1c1e] hover:bg-[#f0ece6] rounded-md transition text-xs font-medium"
                       >
+                        <Edit className="w-3.5 h-3.5" />
                         Edit
                       </a>
                       <button
                         onClick={() => handleDelete(b._id)}
                         disabled={loading}
-                        className="px-3 py-1.5 text-[#b0a898] hover:text-[#b91c1c] hover:bg-[#fef2f2] rounded-md transition text-xs font-medium disabled:opacity-50"
+                        className="flex items-center gap-1 px-3 py-1.5 text-[#b0a898] hover:text-red-600 hover:bg-red-50 rounded-md transition text-xs font-medium disabled:opacity-50"
                       >
+                        <Trash2 className="w-3.5 h-3.5" />
                         Delete
                       </button>
                     </div>
@@ -259,22 +247,22 @@ export default function BookingTable({ initialBookings }: Props) {
       </div>
 
       {/* Footer */}
-      <div className="px-5 py-4 border-t border-[#e8e4dc] bg-[#faf9f7] flex flex-wrap justify-between items-center gap-3">
+      <div className="px-6 py-3 border-t border-[#e8e4dc] bg-[#faf9f7] flex flex-wrap items-center justify-between gap-3">
         <span className="text-sm text-[#8a7a6a]">
           Showing <strong className="text-[#1c1c1e]">{filteredBookings.length}</strong> of{' '}
           <strong className="text-[#1c1c1e]">{bookings.length}</strong> bookings
         </span>
-        <div className="flex items-center gap-4 text-sm text-[#8a7a6a]">
-          <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+        <div className="flex flex-wrap items-center gap-4 text-sm text-[#8a7a6a]">
+          <span className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
             Paid: {bookings.filter((b) => b.paymentStatus === 'paid').length}
           </span>
-          <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-amber-500" />
+          <span className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
             Partial: {bookings.filter((b) => b.paymentStatus === 'partial').length}
           </span>
-          <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-gray-400" />
+          <span className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-gray-400" />
             Unpaid: {bookings.filter((b) => b.paymentStatus !== 'paid' && b.paymentStatus !== 'partial').length}
           </span>
         </div>
