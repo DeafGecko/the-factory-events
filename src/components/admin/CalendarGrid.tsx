@@ -98,6 +98,7 @@ export default function CalendarGrid({ bookings }: Props) {
 
       return (
       <div className="bg-white rounded-xl border border-[#e8e4dc] shadow-sm overflow-hidden">
+            
 {/* ── Header ── */}
             <div className="px-6 py-4 border-b border-[#e8e4dc] bg-[#faf9f7] flex flex-wrap items-center justify-between gap-3">
                   <div className="flex items-center gap-2">

@@ -5,6 +5,14 @@
 import AdminLayout from '../../layouts/AdminLayout.astro';
 import { sanityClient } from '../../lib/sanity';
 import CalendarGrid from '../../components/admin/CalendarGrid';
+import { 
+      Calendar,
+      PartyPopper,
+      Users,
+      MapPin,
+      Clock,
+      AlertCircle
+} from 'lucide-react';
 
 // Fetch all bookings
 const bookings = await sanityClient.fetch(`

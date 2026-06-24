@@ -118,7 +118,8 @@ export default function BookingTable({ initialBookings }: Props) {
 
   return (
     <div className="bg-white rounded-xl border border-[#e8e4dc] shadow-sm overflow-hidden">
-      {/* Toolbar */}
+
+{/* Toolbar */}
       <div className="px-6 py-4 border-b border-[#e8e4dc] bg-[#faf9f7] flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3 flex-1">
           <div className="relative flex-1 min-w-[200px]">
@@ -154,7 +155,7 @@ export default function BookingTable({ initialBookings }: Props) {
         )}
       </div>
 
-      {/* Table */}
+{/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
@@ -246,7 +247,7 @@ export default function BookingTable({ initialBookings }: Props) {
         </table>
       </div>
 
-      {/* Footer */}
+{/* Footer */}
       <div className="px-6 py-3 border-t border-[#e8e4dc] bg-[#faf9f7] flex flex-wrap items-center justify-between gap-3">
         <span className="text-sm text-[#8a7a6a]">
           Showing <strong className="text-[#1c1c1e]">{filteredBookings.length}</strong> of{' '}

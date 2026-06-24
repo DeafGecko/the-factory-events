@@ -14,7 +14,7 @@ import {
       Settings,
       LogOut,
       BookOpen,
-      LayoutGrid
+      LayoutGrid,
 } from 'lucide-react';
 
 // Props interface
@@ -458,15 +458,18 @@ const currentYear = new Date().getFullYear();
 
                   <div class="sidebar-bottom">
                         <hr aria-hidden="true" />
-                        <a href="/admin/spaces">
+                        <a href="/admin/spaces" class:list={['flex items-center gap-3 px-4 py-2.5 rounded-md', Astro.url.pathname === '/admin/spaces' ? 'active' : '']}
+                        >
                               <LayoutGrid class="icon" aria-hidden="true" />
                               Spaces
                         </a>
-                        <a href="/admin/settings">
+                        <a href="/admin/settings" class:list={['flex items-center gap-3 px-4 py-2.5 rounded-md', Astro.url.pathname === '/admin/settings' ? 'active' : '']}
+                        >
                               <Settings class="icon" aria-hidden="true" />
                               Settings
                         </a>
-                        <a href="/admin/logout" class="logout">
+                        <a href="/admin/logout" class:list={['flex items-center gap-3 px-4 py-2.5 rounded-md', Astro.url.pathname === '/admin/logout' ? 'active' : '']}
+                        >
                               <LogOut class="icon" aria-hidden="true" />
                               Logout
                         </a>
