@@ -1,7 +1,6 @@
 ---
 // src/layouts/AdminLayout.astro
-// Swiss‑Industrial Admin Layout – warm palette, clean typography, subtle curves
-// Customizable via CSS variables (overridden by Sanity settings)
+// Swiss‑Industrial Admin Layout – warm palette, clean typography
 
 export interface Props {
   title: string;
@@ -32,6 +31,136 @@ const defaults = {
 };
 
 const c = { ...defaults, ...settings };
+
+// Generate CSS as a safe string (avoids interpolation issues inside the style tag)
+const cssVars = `
+  :root {
+    --admin-primary: ${c.primary};
+    --admin-secondary: ${c.secondary};
+    --admin-accent: ${c.accent};
+    --admin-bg: ${c.background};
+    --admin-text: ${c.text};
+    --admin-sidebar: ${c.sidebar};
+    --admin-font: ${c.font};
+    --admin-logo: url(${c.logo});
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--admin-font);
+    background: var(--admin-bg);
+    color: var(--admin-text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .sidebar {
+    background: var(--admin-sidebar);
+    color: #f5f3ef;
+  }
+  .sidebar a {
+    color: #f5f3ef;
+    transition: background 0.15s ease;
+  }
+  .sidebar a:hover {
+    background: rgba(255,255,255,0.06);
+  }
+  .sidebar a.active {
+    background: rgba(255,255,255,0.08);
+    font-weight: 500;
+  }
+
+  .card {
+    background: #ffffff;
+    border: 1px solid var(--admin-accent);
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.02);
+  }
+
+  .btn-primary {
+    background: var(--admin-primary);
+    color: #fff;
+    border: none;
+    padding: 0.6rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: background 0.2s;
+  }
+  .btn-primary:hover {
+    background: var(--admin-secondary);
+  }
+
+  input, select, textarea {
+    border: 1px solid var(--admin-accent);
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    background: #fff;
+    color: var(--admin-text);
+    font-family: var(--admin-font);
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: 2px solid var(--admin-primary);
+    outline-offset: 1px;
+  }
+
+  .badge-paid {
+    background: #d4edda;
+    color: #155724;
+  }
+  .badge-partial {
+    background: #fff3cd;
+    color: #856404;
+  }
+  .badge-unpaid {
+    background: #f8d7da;
+    color: #721c24;
+  }
+
+  @media (prefers-contrast: high) {
+    :root {
+      --admin-bg: #ffffff;
+      --admin-text: #000000;
+      --admin-primary: #000000;
+      --admin-secondary: #333333;
+      --admin-accent: #666666;
+      --admin-sidebar: #1a1a1a;
+    }
+    .card { border-width: 2px; }
+    .btn-primary { background: #000; color: #fff; }
+  }
+
+  html.dark {
+    --admin-bg: #1c1c1e;
+    --admin-text: #e8e0d8;
+    --admin-accent: #4a3a2a;
+    --admin-sidebar: #0a0a08;
+  }
+  html.dark .card {
+    background: #2a2a2e;
+    border-color: #3a3a3e;
+  }
+  html.dark .btn-primary {
+    background: #6a4a30;
+    color: #fff;
+  }
+  html.dark input,
+  html.dark select,
+  html.dark textarea {
+    background: #2a2a2e;
+    color: #e8e0d8;
+    border-color: #4a3a3a;
+  }
+
+  .logo {
+    background-image: var(--admin-logo);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: left center;
+    width: 120px;
+    height: 40px;
+  }
+`;
 ---
 
 <!DOCTYPE html>
@@ -46,157 +175,16 @@ const c = { ...defaults, ...settings };
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz@14..32&display=swap" rel="stylesheet" />
 
-  <!-- Global Tailwind CSS -->
+  <!-- Tailwind CSS -->
   <link rel="stylesheet" href="/styles/global.css" />
 
-  <!-- Inline CSS variables for dynamic theming -->
-  <style>
-    :root {
-      --admin-primary: {c.primary};
-      --admin-secondary: {c.secondary};
-      --admin-accent: {c.accent};
-      --admin-bg: {c.background};
-      --admin-text: {c.text};
-      --admin-sidebar: {c.sidebar};
-      --admin-font: {c.font};
-      --admin-logo: url('{c.logo}');
-    }
-
-    /* Reset & Base */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: var(--admin-font);
-      background: var(--admin-bg);
-      color: var(--admin-text);
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-
-    /* Sidebar */
-    .sidebar {
-      background: var(--admin-sidebar);
-      color: #f5f3ef;
-    }
-    .sidebar a {
-      color: #f5f3ef;
-      transition: background 0.15s ease;
-    }
-    .sidebar a:hover {
-      background: rgba(255, 255, 255, 0.06);
-    }
-    .sidebar a.active {
-      background: rgba(255, 255, 255, 0.08);
-      font-weight: 500;
-    }
-
-    /* Cards */
-    .card {
-      background: #ffffff;
-      border: 1px solid var(--admin-accent);
-      border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 2px 8px rgba(0, 0, 0, 0.02);
-    }
-
-    /* Buttons */
-    .btn-primary {
-      background: var(--admin-primary);
-      color: #fff;
-      border: none;
-      padding: 0.6rem 1.5rem;
-      border-radius: 6px;
-      font-weight: 500;
-      transition: background 0.2s;
-    }
-    .btn-primary:hover {
-      background: var(--admin-secondary);
-    }
-
-    /* Inputs */
-    input, select, textarea {
-      border: 1px solid var(--admin-accent);
-      border-radius: 6px;
-      padding: 0.5rem 0.75rem;
-      background: #fff;
-      color: var(--admin-text);
-      font-family: var(--admin-font);
-    }
-    input:focus, select:focus, textarea:focus {
-      outline: 2px solid var(--admin-primary);
-      outline-offset: 1px;
-    }
-
-    /* Badges */
-    .badge-paid {
-      background: #d4edda;
-      color: #155724;
-    }
-    .badge-partial {
-      background: #fff3cd;
-      color: #856404;
-    }
-    .badge-unpaid {
-      background: #f8d7da;
-      color: #721c24;
-    }
-
-    /* High contrast override */
-    @media (prefers-contrast: high) {
-      :root {
-        --admin-bg: #ffffff;
-        --admin-text: #000000;
-        --admin-primary: #000000;
-        --admin-secondary: #333333;
-        --admin-accent: #666666;
-        --admin-sidebar: #1a1a1a;
-      }
-      .card { border-width: 2px; }
-      .btn-primary { background: #000; color: #fff; }
-    }
-
-    /* Dark mode (toggle via `html.dark` class) */
-    html.dark {
-      --admin-bg: #1c1c1e;
-      --admin-text: #e8e0d8;
-      --admin-accent: #4a3a2a;
-      --admin-sidebar: #0a0a08;
-    }
-    html.dark .card {
-      background: #2a2a2e;
-      border-color: #3a3a3e;
-    }
-    html.dark .btn-primary {
-      background: #6a4a30;
-      color: #fff;
-    }
-    html.dark input,
-    html.dark select,
-    html.dark textarea {
-      background: #2a2a2e;
-      color: #e8e0d8;
-      border-color: #4a3a3a;
-    }
-
-    /* Logo placeholder */
-    .logo {
-      background-image: var(--admin-logo);
-      background-size: contain;
-      background-repeat: no-repeat;
-      background-position: left center;
-      width: 120px;
-      height: 40px;
-    }
-  </style>
+  <!-- Dynamic CSS variables (safe) -->
+  <style>{cssVars}</style>
 </head>
 <body>
   <div class="flex min-h-screen">
-    <!-- ========== SIDEBAR ========== -->
+    <!-- Sidebar -->
     <aside class="sidebar w-64 flex-shrink-0 m-4 rounded-lg shadow-soft hidden md:block">
-      <!-- Logo & Brand -->
       <div class="p-6 border-b border-white/10 flex items-center gap-3">
         <div class="logo"></div>
         <div>
@@ -204,37 +192,20 @@ const c = { ...defaults, ...settings };
           <p class="text-xs text-white/50">Admin Panel</p>
         </div>
       </div>
-
-      <!-- Navigation -->
       <nav class="p-4 space-y-1 text-sm">
-        <a href="/admin/dashboard" class="block px-4 py-2.5 rounded-md hover:bg-white/10 transition" aria-current="page">
-          <span class="mr-3">📊</span> Dashboard
-        </a>
-        <a href="/admin" class="block px-4 py-2.5 rounded-md hover:bg-white/10 transition">
-          <span class="mr-3">📋</span> Bookings
-        </a>
-        <a href="/admin/calendar" class="block px-4 py-2.5 rounded-md hover:bg-white/10 transition">
-          <span class="mr-3">📅</span> Calendar
-        </a>
-        <a href="/admin/bills" class="block px-4 py-2.5 rounded-md hover:bg-white/10 transition">
-          <span class="mr-3">💰</span> Bills
-        </a>
-        <a href="/admin/newsletter" class="block px-4 py-2.5 rounded-md hover:bg-white/10 transition">
-          <span class="mr-3">📧</span> Newsletter
-        </a>
-        <a href="/admin/settings" class="block px-4 py-2.5 rounded-md hover:bg-white/10 transition">
-          <span class="mr-3">⚙️</span> Settings
-        </a>
+        <a href="/admin/dashboard" class="block px-4 py-2.5 rounded-md hover:bg-white/10 transition">📊 Dashboard</a>
+        <a href="/admin" class="block px-4 py-2.5 rounded-md hover:bg-white/10 transition">📋 Bookings</a>
+        <a href="/admin/calendar" class="block px-4 py-2.5 rounded-md hover:bg-white/10 transition">📅 Calendar</a>
+        <a href="/admin/bills" class="block px-4 py-2.5 rounded-md hover:bg-white/10 transition">💰 Bills</a>
+        <a href="/admin/newsletter" class="block px-4 py-2.5 rounded-md hover:bg-white/10 transition">📧 Newsletter</a>
+        <a href="/admin/settings" class="block px-4 py-2.5 rounded-md hover:bg-white/10 transition">⚙️ Settings</a>
         <hr class="border-white/10 my-3" />
-        <a href="/admin/logout" class="block px-4 py-2.5 rounded-md hover:bg-white/10 transition text-white/60">
-          <span class="mr-3">🚪</span> Logout
-        </a>
+        <a href="/admin/logout" class="block px-4 py-2.5 rounded-md hover:bg-white/10 transition text-white/60">🚪 Logout</a>
       </nav>
     </aside>
 
-    <!-- ========== MAIN CONTENT ========== -->
+    <!-- Main Content -->
     <main class="flex-1 p-6 overflow-x-auto">
-      <!-- Header -->
       <header class="flex justify-between items-center mb-8">
         <h1 class="text-2xl font-light tracking-wider uppercase">{title}</h1>
         <div class="flex items-center gap-4">
@@ -242,8 +213,6 @@ const c = { ...defaults, ...settings };
           <a href="/admin/logout" class="text-sm text-[#8e8e93] hover:text-[#1c1c1e] transition">Logout</a>
         </div>
       </header>
-
-      <!-- Page content -->
       <slot />
     </main>
   </div>
