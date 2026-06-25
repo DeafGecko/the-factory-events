@@ -1,4 +1,4 @@
-# 🏛️ The Factory at Franklin, TN – Event Planner Platform
+# 🏛️ The Factory at Franklin, TN – Venue Operations
 
 [![Astro](https://img.shields.io/badge/Astro-5.1-FF5D01?logo=astro&logoColor=white)](https://astro.build)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://reactjs.org/)
@@ -7,73 +7,84 @@
 [![Cloudflare](https://img.shields.io/badge/Cloudflare-Pages-FF6F00?logo=cloudflare&logoColor=white)](https://pages.cloudflare.com/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
-> **Full‑stack event management platform** – book, manage, and track events with an edge‑deployed, serverless architecture.  
+> **Full‑stack venue operations platform** – book, manage, and track  with an edge‑deployed, serverless architecture.   
 > Designed with a **Swiss‑industrial minimalist** aesthetic, subtle Apple‑inspired curves, and a warm, customizable color palette.
 
 🔗 **Live Demo:** [the-factory-events.pages.dev](https://the-factory-events.pages.dev) *(replace with your actual Cloudflare URL)*
 
 ---
 
-## ✨ Features
+## Features
 
-### 👤 Client Experience
-- **Two‑step booking form** – client info + event details with estimated pricing.
-- **Client dashboard** – view booking status, pay outstanding balances, and download invoices (coming soon).
-- **Auto‑generated account numbers** for every booking.
-- **Self‑service login** using booking # + email.
+### Client Experience
 
-### 🔐 Admin Back‑Office
-- **Secure admin login** (password‑protected).
-- **Admin dashboard** with real‑time stats:
-  - Revenue, total bookings, upcoming events, QR scan counts.
-  - Revenue by month (bar chart) and booking status (pie chart).
-- **Booking management** – search, filter, edit, and delete bookings.
-- **Interactive calendar** – monthly view with event indicators.
-- **Bills & payments** – track outstanding balances and record payments.
-- **Client customisation** – brand colors, fonts, and logo can be updated via Sanity settings.
+* **Space reservation** – Reserve venues, meeting rooms, ballrooms, covered booths, open-air booths, vendor spaces, and other rental locations.
+* **Two-step reservation form** – Client information + reservation details with estimated pricing.
+* **Client portal** – View reservation status, upcoming bookings, invoices, and payment history *(coming soon)*.
+* **Auto-generated reservation IDs** for every booking.
+* **Self-service login** using reservation ID + email.
 
-### 🎨 Design Language
-- **Swiss‑industrial minimalism** – clean grids, generous white space, functional typography.
-- **Subtle curves** (`rounded-lg` / `rounded-md`) – Apple‑inspired refinement without over‑rounding.
-- **Warm palette** – Carmine, Cardinal, Chamois, Sepia, and Dark Brown.
-- **Built‑in dark mode** and **high‑contrast** support for accessibility.
+### Venue Operations
 
-### ⚙️ Architecture & Technology
-- **Astro 5** – islands architecture; only the interactive parts (charts, forms) are hydrated.
-- **React 19** – for interactive UI components.
-- **Sanity v3** – headless CMS for bookings, settings, subscribers, and waitlist.
-- **Cloudflare D1** – transactional data (payments, analytics, QR scans, email logs).
-- **Cloudflare Pages** – serverless deployment at the edge.
-- **Cloudflare Workers** – for cron jobs and serverless API endpoints.
-- **Tailwind CSS 4** – utility‑first styling with the Vite plugin.
-- **TypeScript** – full type safety.
+* **Secure admin authentication** for venue staff.
+* **Operations dashboard** with real-time insights:
 
----
+  * Revenue, reservations, occupancy, upcoming rentals, and QR scan analytics.
+  * Monthly revenue (bar chart) and reservation status (pie chart).
+* **Reservation management** – Create, search, filter, edit, cancel, and manage reservations.
+* **Venue management** – Configure venues, rooms, vendor spaces, booths, and rental locations.
+* **Availability calendar** – Interactive monthly calendar with reservation indicators.
+* **Billing & payments** – Generate invoices, track balances, and record payments.
+* **Client customization** – Update brand colors, typography, and logo through Sanity settings.
 
-## 🧰 Tech Stack at a Glance
+### Design System
 
-| Layer | Technology |
-| :--- | :--- |
-| **Frontend** | Astro 5 + React 19 |
-| **Styling** | Tailwind CSS 4 + Inter font |
-| **CMS** | Sanity v3 |
-| **Database** | Cloudflare D1 (SQLite) |
-| **Hosting** | Cloudflare Pages |
-| **Serverless** | Cloudflare Workers |
-| **Payments** | Stripe (mock mode ready) |
-| **Emails** | Resend |
-| **Icons** | Lucide React |
+* **Swiss-industrial minimalism** – Clean layouts, structured grids, and functional typography.
+* **Accessible interface** – Built for administrators, venue staff, and clients with usability as the priority.
+* **Refined UI** – Subtle rounded corners (`rounded-md` / `rounded-lg`) inspired by Apple's design language.
+* **Warm color palette** – Carmine, Cardinal, Chamois, Sepia, and Dark Brown.
+* **Built-in dark mode** and **high-contrast accessibility** support.
+
+### Architecture & Technology
+
+* **Astro 5** – Islands architecture that hydrates only interactive components.
+* **React 19** – Interactive dashboards, forms, and management tools.
+* **Sanity v3** – Headless CMS for venue content, settings, clients, and reservations.
+* **Cloudflare D1** – Stores reservations, payments, analytics, QR scans, and activity logs.
+* **Cloudflare Pages** – Global edge deployment.
+* **Cloudflare Workers** – Serverless APIs, scheduled jobs, and background tasks.
+* **Tailwind CSS 4** – Utility-first styling powered by Vite.
+* **TypeScript** – End-to-end type safety.
 
 ---
 
-## 🚀 Getting Started (Local Development)
+## Tech Stack
+
+| Layer          | Technology                       |
+| :------------- | :------------------------------- |
+| **Frontend**   | Astro 5 + React 19               |
+| **Styling**    | Tailwind CSS 4 + Inter           |
+| **CMS**        | Sanity v3                        |
+| **Database**   | Cloudflare D1 (SQLite)           |
+| **Hosting**    | Cloudflare Pages                 |
+| **Serverless** | Cloudflare Workers               |
+| **Payments**   | Stripe *(ready for integration)* |
+| **Emails**     | Resend                           |
+| **Icons**      | Lucide React                     |
+
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js 22+
-- A Sanity account (free tier)
-- A Cloudflare account (free tier)
 
-### 1. Clone the repository
-```bash
+* Node.js 22+
+* Sanity account (Free)
+* Cloudflare account (Free)
+
+### Clone the repository
+
+```bash ??? fix later
 git clone https://github.com/DeafGecko/the-factory-events.git
 cd the-factory-events
+```

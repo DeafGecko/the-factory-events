@@ -1,0 +1,22 @@
+---
+// src/pages/admin/settings.astro
+// Settings page – brand, colors, fees, contact
+
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import SettingsForm from '../../components/admin/SettingsForm';
+import { sanityClient } from '../../lib/sanity';
+
+// Fetch settings (will create if missing)
+const settings = await sanityClient.fetch(`*[_type == "settings"][0]`);
+---
+
+<AdminLayout title="Settings">
+      <div class="max-w-4xl mx-auto">
+            <div class="mb-6">
+                  <h2 class="text-xl font-light tracking-wide">Site Settings</h2>
+                  <p class="text-sm text-[#8e8e93]">Manage venue branding, colors, fees, and contact info.</p>
+            </div>
+
+            <SettingsForm client:load initialSettings={settings} />
+      </div>
+</AdminLayout>

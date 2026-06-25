@@ -36,10 +36,5 @@ const formattedBookings = bookings.map((b: any) => ({
 ---
 
 <AdminLayout title="Calendar">
-      <div class="mb-6">
-            <h2 class="text-xl font-light tracking-wide">Event Calendar</h2>
-            <p class="text-sm text-[#8e8e93]">View all bookings by date</p>
-      </div>
-
       <CalendarGrid client:load bookings={formattedBookings} />
 </AdminLayout>

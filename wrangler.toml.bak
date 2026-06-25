@@ -1,7 +1,7 @@
-name = "event-planner-api"
+name = "venue-operations-api"
 compatibility_date = "2024-12-30"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "event-planner-d1"
+database_name = "venue-operations-d1"
 database_id = "abc123-def-456-ghi-789-jkl"
