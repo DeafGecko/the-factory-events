@@ -91,22 +91,24 @@ const currentYear = new Date().getFullYear();
 /* ── Layout ── */
             .app-wrapper {
                   display: flex;
-                  min-height: 100vh;
-                  flex: 1;
+                  height: 100vh;          /* Full viewport height */
+                  overflow: hidden;       /* Prevent whole page scroll */
             }
 
 /* ── Sidebar – high contrast, no shadows ── */
             .sidebar {
                   background: var(--admin-sidebar);
-                  color: #ffffff;        
+                  color: #ffffff;
                   width: 220px;
                   flex-shrink: 0;
                   display: flex;
                   flex-direction: column;
                   margin: 1rem 0 1rem 1rem;
-                  border: 2px solid rgba(255, 255, 255, 0.15); 
-                  border-radius: 12px;      
-                  padding: 0;      
+                  border: 2px solid rgba(255, 255, 255, 0.15);
+                  border-radius: 12px;
+                  padding: 0;
+                  height: calc(100% - 2rem); /* account for top/bottom margin */
+                  overflow-y: auto;         /* In case sidebar itself has long content (rare) */
             }
 
             .sidebar-brand {
@@ -238,15 +240,17 @@ const currentYear = new Date().getFullYear();
                   letter-spacing: 0.3px;
             }
 
-/* ── Main content ── */
+/* ── Main content – scrollable ── */
             .main-content {
                   flex: 1;
                   display: flex;
                   flex-direction: column;
-                  padding: 1.5rem 2rem 0 2rem; 
-                  overflow-x: auto;
-                  min-width: 0;
+                  padding: 1.5rem 2rem 0 2rem;
+                  overflow-y: auto;      /* Scroll only this area */
+                  min-height: 0;         /* Flex override to allow shrinking */
+                  height: 100vh;         /* Ensure it fills the parent */
             }
+
 
             .main-content-inner { flex: 1; }
 
