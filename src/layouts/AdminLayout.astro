@@ -218,9 +218,9 @@ const currentYear = new Date().getFullYear();
             display: flex;
             flex-direction: column;
             padding: 1.5rem 2rem 0 2rem;
-            overflow-y: hidden;      /* no scroll on the wrapper*/
-            min-height: 0;         /* Flex override to allow shrinking */
-            height: 100vh;         /* Ensure it fills the parent */
+            overflow-y: hidden;      /* ← important: no scroll on wrapper */
+            min-height: 0;        
+            height: 100vh;           /* or height: 100% */
       }
 
 /* ── Header ── stay fixed ── */
@@ -292,7 +292,7 @@ const currentYear = new Date().getFullYear();
             display: flex;
             flex-direction: column;
             padding-bottom: 1rem;
-            min-height: 0;               /* Important: allows flex child to shrink */
+            min-height: 0;               /* ← the crucial fix! */
       }
 
       .content-inner {
@@ -469,21 +469,24 @@ const currentYear = new Date().getFullYear();
 
 <!-- ===== MAIN CONTENT ===== -->
       <div class="main-content">
-            <div class="main-content-inner">
-                  <header class="page-header">
-                        <h1>{title}</h1>
-                        <div class="header-actions">
-                              <span class="user-badge">
-                              <span class="avatar" aria-hidden="true">A</span>
+            <!-- Header – stays fixed -->
+            <header class="page-header">
+                  <h1>{title}</h1>
+                  <div class="header-actions">
+                        <span class="user-badge">
+                        <span class="avatar" aria-hidden="true">A</span>
                               Admin
-                              </span>
-                              <a href="/admin/logout" class="logout-link">Logout</a>
-                        </div>
-                  </header>
+                        </span>
+                        <a href="/admin/logout" class="logout-link">Logout</a>
+                  </div>
+            </header>
 
-                  <slot />
-            </div>
-
+            <!-- Scrollable area -->
+            <div class="content-scroll">
+                  <div class="content-inner">
+                        <slot />
+                  
+                  </div>
                   <footer class="app-footer">
                         <span>&copy; {currentYear} <a href="https://09labs.dev">09 labs</a></span>
                         <span>
