@@ -1,12 +1,14 @@
 ---
 // src/pages/admin/index.astro
-// Bookings Management – Full list with search, filter, edit, delete
+// Bookings list – main admin page
 
-import AdminLayout from "../../layouts/AdminLayout.astro";
-import { sanityClient } from "../../lib/sanity";
-import BookingTable from "../../components/admin/BookingTable";
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { sanityClient } from '../../lib/sanity';
+import Card from '../../components/ui/Card.astro';
+import Button from '../../components/ui/Button.astro';
+import BookingTable from '../../components/admin/BookingTable';
 
-// Fetch all bookings from Sanity
+// Fetch all bookings
 const bookings = await sanityClient.fetch(`
   *[_type == "booking"] | order(createdAt desc) {
     _id,
@@ -16,6 +18,9 @@ const bookings = await sanityClient.fetch(`
     phone,
     eventDate,
     eventType,
+    bookingType,
+    assignedSpace,
+    spaceType,
     guestCount,
     totalPrice,
     amountPaid,
@@ -26,20 +31,20 @@ const bookings = await sanityClient.fetch(`
 `);
 ---
 
-<AdminLayout title="Bookings Management">
-  <div class="mb-6 flex justify-between items-center flex-wrap gap-4">
-    <div>
-      <h2 class="text-xl font-light tracking-wide">All Bookings</h2>
-      <p class="text-sm text-[#8e8e93]">{bookings.length} total bookings</p>
-    </div>
-    <a
-      href="/admin/request"
-      class="px-6 py-2.5 rounded-md bg-[#1c1c1e] text-white hover:bg-[#2c2c2e] transition text-sm"
-    >
-      + New Booking
-    </a>
-  </div>
+<AdminLayout title="Bookings">
+  <section>
+    <header class="flex flex-wrap items-center justify-between gap-4 mb-6">
+      <div>
+        <h2 class="text-xl font-light tracking-wide">All Bookings</h2>
+        <p class="text-sm text-[#8e8e93]">{bookings.length} total bookings</p>
+      </div>
+      <a href="/admin/request" class="inline-block">
+        <Button variant="primary">+ New Booking</Button>
+      </a>
+    </header>
 
-  <!-- React component with search, filter, actions -->
-  <BookingTable client:load initialBookings={bookings} />
+    <Card noPadding>
+      <BookingTable client:load initialBookings={bookings} />
+    </Card>
+  </section>
 </AdminLayout>

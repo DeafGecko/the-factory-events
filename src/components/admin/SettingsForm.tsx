@@ -7,13 +7,19 @@ import { Save, RefreshCw } from 'lucide-react';
 interface Settings {
       _id: string;
       venueName: string;
-      logo?: { asset?: { url: string } };
+      logo?: 
+            { asset?: { 
+                  _ref: string; 
+                  url: string 
+            } 
+      };
       primaryColor: string;
       secondaryColor: string;
       accentColor: string;
       backgroundColor: string;
       textColor: string;
       sidebarColor: string;
+      themePreference: 'light' | 'dark' | 'high-contrast';
       contactEmail: string;
       contactPhone: string;
       address: string;
@@ -23,118 +29,131 @@ interface Settings {
       fontFamily: string;
 }
 
-interface Props {
-      initialSettings: Settings;
-}
-
-export default function SettingsForm({ initialSettings }: Props) {
-      const [formData, setFormData] = useState<Settings>(initialSettings);
+export default function SettingsForm() {
+      const [formData, setFormData] = useState<Settings | null>(null);
       const [loading, setLoading] = useState(false);
       const [success, setSuccess] = useState(false);
       const [error, setError] = useState<string | null>(null);
-      const [logoPreview, setLogoPreview] = useState<string | null>(
-            initialSettings.logo?.asset?.url || null
-      );
+      const [logoPreview, setLogoPreview] = useState<string | null>(null);
+
+// ── Fetch settings on mount──
+      useEffect(() => {
+            const fetchSettings = async () => {
+                  try {
+                        const res = await fetch('/api/admin/settings');
+                        if (!res.ok) throw new Error('Failed to load');
+                        const data = await res.json();
+                        setFormData(data);
+                        setLogoPreview(data.logo?.asset?.url || null);
+                  } catch (err) {
+                        setError('Could not load settings.');
+                  } finally {
+                        setLoading(false);
+            }
+      };
+      fetchSettings();
+  }, []);
 
 // ── Handle form changes ──
       const handleChange = (
             e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
       ) => {
       const { name, value, type } = e.target;
-            setFormData((prev) => ({
-                  ...prev,
-            [name]: type === 'number' ? parseFloat(value) || 0 : value,
-      }));
-      };
-
-// ── Handle color change with preview ──
-      const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-            const { name, value } = e.target;
-            setFormData((prev) => ({ ...prev, [name]: value }));
+            setFormData((prev) => {
+                  if (!prev) return prev;
+                  return {
+                        ...prev,
+                        [name]: type === 'number' ? parseFloat(value) || 0 : value,
+                  };
+            });
       };
 
 // ── Logo upload (simplified – just stores the URL for now) ──
 // For a full implementation, you'd upload to Sanity's asset API.
 // For now, we'll just show a text input for the logo URL.
-      const handleLogoUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-            const url = e.target.value;
-            setLogoPreview(url);
-            setFormData((prev) => ({
-                  ...prev,
-            logo: url ? { asset: { url } } : undefined,
-            }));
+      const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+            const file = e.target.files?.[0];
+                  if (!file) return;
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                  const base64String = reader.result as string;
+                  setFormData((prev) => ({
+                        ...prev!,
+                        logo: { asset: { url: base64String } },
+                  }));
+            };
+            reader.readAsDataURL(file);
       };
 
 // ── Submit ──
       const handleSubmit = async (e: React.FormEvent) => {
             e.preventDefault();
-            setLoading(true);
+            if (!settings) return;
+            setSaving(true);
             setError(null);
             setSuccess(false);
 
       try {
-// Remove _id from the update payload (don't send it back)
-            const { _id, ...updateData } = formData;
-// Convert logo to a simple object if present
-            const payload = {
-                  ...updateData,
-                  logo: updateData.logo?.asset?.url ? { asset: { url: updateData.logo.asset.url } } : undefined,
+            const res = await fetch('/api/admin/settings', {
+                  method: 'PUT',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(payload),
+                  });
+            if (!res.ok) {
+                  const err = await res.json();
+                  throw new Error(err.error || 'Failed to save settings');
+                  }
+                  setSuccess(true);
+                  setTimeout(() => setSuccess(false), 3000);
+                  } catch (err: any) {
+                  setError(err.message || 'Something went wrong');
+                  } finally {
+                  setLoading(false);
+                  }
             };
-      const res = await fetch('/api/admin/settings', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-            });
-      if (!res.ok) {
-            const err = await res.json();
-            throw new Error(err.error || 'Failed to save settings');
+
+            if (loading) {
+                  return <div className="text-center py-12 text-[#8e8e93]">Loading settings...</div>;
             }
-            setSuccess(true);
-            setTimeout(() => setSuccess(false), 3000);
-            } catch (err: any) {
-            setError(err.message || 'Something went wrong');
-            } finally {
-            setLoading(false);
+
+            if (error && !settings) {
+                  return <div className="text-red-600">Error: {error}</div>;
             }
-      };
 
-// ── Reset to initial values ──
-      const handleReset = () => {
-            setFormData(initialSettings);
-            setLogoPreview(initialSettings.logo?.asset?.url || null);
-            setError(null);
-      };
+            if (!settings) {
+                  return <div className="text-center py-12 text-[#8e8e93]">No settings found. Create your first settings.</div>;
+            }
 
-      return (
-      <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-[#e8e4dc] shadow-sm overflow-hidden">
-            {/* Header */}
-            <div className="px-6 py-4 border-b border-[#e8e4dc] bg-[#faf9f7] flex flex-wrap items-center justify-between gap-3">
-            <span className="text-sm text-[#8a7a6a]">Update your venue settings</span>
-                  <div className="flex items-center gap-2">
-                        {success && <span className="text-emerald-600 text-sm">✅ Saved!</span>}
-                        {error && <span className="text-red-600 text-sm">❌ {error}</span>}
-                  </div>
-            </div>
+{/* ── Form ── */}
+            <form onSubmit={handleSubmit
+            return (
+                  <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-[#e8e4dc] shadow-sm p-6 space-y-6">
+                        {success && (
+                              <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-md text-sm">
+                                    ✅ Settings saved successfully!
+                              </div>
+                        )}
+                        {error && (
+                              <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md text-sm">
+                                    ❌ {error}
+                              </div>
+                        )}
 
-      <div className="p-6 space-y-6">
-
-{/* ── Branding ── */}
-      <section>
-            <h3 className="text-sm font-semibold text-[#1c1c1e] mb-3">Branding</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                        <label htmlFor="venueName" className="block text-sm font-medium text-[#1c1c1e]">
-                        Venue Name
-                        </label>
-                        <input
-                              type="text"
-                              id="venueName"
-                              name="venueName"
-                              value={formData.venueName || ''}
-                              onChange={handleChange}
-                              className="mt-1 w-full border border-[#e8e4dc] rounded-md px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#1c1c1e]"
-                        />
-                  </div>
+{/* ──  ── */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label htmlFor="venueName" className="block text-sm font-medium text-[#1c1c1e]">
+            Venue Name
+          </label>
+          <input
+            type="text"
+            id="venueName"
+            name="venueName"
+            value={settings.venueName || ''}
+            onChange={handleChange}
+            className="mt-1 w-full border border-[#e8e4dc] rounded-md px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#1c1c1e]"
+          />
+        </div>
             <div>
                   <label htmlFor="logoUrl" className="block text-sm font-medium text-[#1c1c1e]">
                         Logo URL (publicly accessible)

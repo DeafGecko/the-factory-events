@@ -1,6 +1,4 @@
 // src/components/admin/BookingTable.tsx
-// Polished booking table with Lucide icons
-
 import { useState, useMemo } from 'react';
 import { Search, Inbox, Trash2, Edit } from 'lucide-react';
 
@@ -12,6 +10,9 @@ interface Booking {
   phone?: string;
   eventDate: string;
   eventType?: string;
+  bookingType?: string;
+  assignedSpace?: string;
+  spaceType?: string;
   guestCount: number;
   totalPrice?: number;
   amountPaid?: number;
@@ -118,8 +119,7 @@ export default function BookingTable({ initialBookings }: Props) {
 
   return (
     <div className="bg-white rounded-xl border border-[#e8e4dc] shadow-sm overflow-hidden">
-
-{/* Toolbar */}
+      {/* Toolbar */}
       <div className="px-6 py-4 border-b border-[#e8e4dc] bg-[#faf9f7] flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3 flex-1">
           <div className="relative flex-1 min-w-[200px]">
@@ -155,7 +155,7 @@ export default function BookingTable({ initialBookings }: Props) {
         )}
       </div>
 
-{/* Table */}
+      {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
@@ -202,9 +202,7 @@ export default function BookingTable({ initialBookings }: Props) {
                   <td className="py-3 px-3 text-[#6a5a4a] hidden md:table-cell">{b.email}</td>
                   <td className="py-3 px-3 text-[#6a5a4a] hidden lg:table-cell">
                     {new Date(b.eventDate).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
+                      month: 'short', day: 'numeric', year: 'numeric',
                     })}
                   </td>
                   <td className="py-3 px-3 text-[#6a5a4a] hidden sm:table-cell">{b.guestCount}</td>
@@ -247,7 +245,7 @@ export default function BookingTable({ initialBookings }: Props) {
         </table>
       </div>
 
-{/* Footer */}
+      {/* Footer */}
       <div className="px-6 py-3 border-t border-[#e8e4dc] bg-[#faf9f7] flex flex-wrap items-center justify-between gap-3">
         <span className="text-sm text-[#8a7a6a]">
           Showing <strong className="text-[#1c1c1e]">{filteredBookings.length}</strong> of{' '}
