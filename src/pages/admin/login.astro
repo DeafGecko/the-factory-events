@@ -1,6 +1,22 @@
 ---
 // src/pages/admin/login.astro
+import { sanityClient } from '../../lib/sanity';
+
+// ── Fetch settings for dynamic branding ──
+let settings;
+try {
+  settings = await sanityClient.fetch(`*[_type == "settings"][0]`);
+} catch {
+  settings = null;
+}
+
+const logoUrl = settings?.logo?.asset?.url || '/logo.svg';
+const sidebarColor = settings?.sidebarColor || '#1A1816';
+const primaryColor = settings?.primaryColor || '#A03A3A';
+const venueName = settings?.venueName || 'Venue Operations';
+
 const error = Astro.url.searchParams.get('error');
+const resetSuccess = Astro.url.searchParams.get('reset');
 ---
 
 <!DOCTYPE html>
@@ -8,70 +24,180 @@ const error = Astro.url.searchParams.get('error');
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Login</title>
+  <title>Admin Login · {venueName}</title>
   <link rel="stylesheet" href="/styles/global.css" />
-  <style>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz@14..32&display=swap" rel="stylesheet" />
+
+  <style define:vars={{
+    sidebarBg: sidebarColor,
+    primary: primaryColor,
+  }}>
     body {
-      background: #f2f1ef;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--sidebarBg);
       display: flex;
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      font-family: system-ui, sans-serif;
+      margin: 0;
+      padding: 1rem;
     }
+
     .login-box {
-      background: white;
-      padding: 2rem;
-      max-width: 400px;
+      background: #ffffff;
+      padding: 2.5rem 2.8rem;
+      max-width: 420px;
       width: 100%;
-      border: 1px solid #d0d0d0;
-      border-radius: 8px;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+      text-align: center;
     }
-    h1 {
-      font-size: 1.5rem;
-      font-weight: 300;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
+
+    .logo {
+      max-height: 48px;
+      width: auto;
       margin-bottom: 1.5rem;
     }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 400;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin: 0 0 0.25rem 0;
+      color: #1a1a1a;
+    }
+
+    .sub {
+      font-size: 0.8rem;
+      color: #8e8e93;
+      margin-bottom: 1.75rem;
+    }
+
     .error {
       color: #b91c1c;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       margin-bottom: 1rem;
+      padding: 0.5rem 0.75rem;
+      background: #fee2e2;
+      border-radius: 6px;
+      border-left: 3px solid #b91c1c;
+      text-align: left;
     }
+
+    .success {
+      color: #065f46;
+      font-size: 0.85rem;
+      margin-bottom: 1rem;
+      padding: 0.5rem 0.75rem;
+      background: #d1fae5;
+      border-radius: 6px;
+      border-left: 3px solid #065f46;
+      text-align: left;
+    }
+
+    label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: #555;
+      margin-bottom: 0.25rem;
+      text-align: left;
+    }
+
     input {
       width: 100%;
       border: 1px solid #d0d0d0;
-      padding: 0.75rem;
-      margin-bottom: 1rem;
-      border-radius: 6px;
-      font-size: 1rem;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1.25rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      transition: border-color 0.15s;
+      background: #fafaf9;
+      box-sizing: border-box;
     }
+
+    input:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: #fff;
+    }
+
     button {
       width: 100%;
-      background: #1a1a1a;
+      background: var(--primary);
       color: white;
       border: none;
-      padding: 0.75rem;
-      border-radius: 6px;
-      font-size: 1rem;
+      padding: 0.8rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.8px;
+      font-weight: 500;
       cursor: pointer;
+      transition: background 0.15s;
     }
+
     button:hover {
-      background: #333;
+      opacity: 0.85;
+    }
+
+    .forgot-link {
+      margin-top: 0.5rem;
+      text-align: right;
+    }
+
+    .forgot-link a {
+      font-size: 0.8rem;
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    .forgot-link a:hover {
+      text-decoration: underline;
+    }
+
+    .footer-text {
+      margin-top: 1.5rem;
+      font-size: 0.7rem;
+      color: #b0a898;
+      text-align: center;
     }
   </style>
 </head>
 <body>
+
   <div class="login-box">
+    <img src={logoUrl} alt="{venueName} logo" class="logo" />
+
     <h1>Admin Login</h1>
-    {error && <p class="error">Invalid password. Try again.</p>}
+    <p class="sub">Enter your credentials to access the admin panel</p>
+
+    {error && <p class="error">{error === '1' ? 'Invalid email or password.' : error}</p>}
+    {resetSuccess && <p class="success">Your password has been reset. Please log in.</p>}
+
     <form method="POST" action="/api/admin/auth">
-      <input type="password" name="password" placeholder="Enter admin password" required />
-      <button type="submit">Login</button>
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" placeholder="admin@venue.com" required />
+
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" placeholder="••••••••" required />
+
+      <button type="submit">Log In</button>
     </form>
+
+    <div class="forgot-link">
+      <a href="/admin/forgot-password">Forgot password?</a>
+    </div>
+
+    <div class="footer-text">
+      {venueName} · v1.0
+    </div>
   </div>
+
 </body>
 </html>

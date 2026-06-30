@@ -1,10 +1,9 @@
 ---
 // src/pages/admin/logout.astro
 const headers = new Headers();
-headers.append(
-      'Set-Cookie',
-      'admin_session=; Path=/admin; HttpOnly; Max-Age=0'
-);
+headers.append('Set-Cookie', 'admin_session=; Path=/admin; HttpOnly; Max-Age=0; SameSite=Lax');
 headers.append('Location', '/admin/login');
+headers.append('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+headers.append('Pragma', 'no-cache');
 return new Response(null, { status: 302, headers });
 ---

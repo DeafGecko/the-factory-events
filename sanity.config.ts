@@ -4,7 +4,8 @@ import { bookingType } from './src/sanity/schemas/bookingType';
 import { subscriberType } from './src/sanity/schemas/subscriberType';
 import { waitlistType } from './src/sanity/schemas/waitlistType';
 import { settingsType } from './src/sanity/schemas/settingsType';
-import { spaceType } from './src/sanity/schemas/spaceType'; // 👈 NEW
+import { spaceType } from './src/sanity/schemas/spaceType';
+import { adminUser } from './src/sanity/schemas/adminUser'; 
 
 export default defineConfig({
   title: 'Event Planner CMS',
@@ -17,7 +18,8 @@ export default defineConfig({
       subscriberType,
       waitlistType,
       settingsType,
-      spaceType, // 👈 NEW
+      spaceType, 
+      adminUser,  // ← ADD THIS
     ],
   },
 });

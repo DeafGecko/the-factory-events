@@ -2,7 +2,7 @@
 // Interactive monthly calendar with event dots and modal
 
 import { useState, useMemo } from 'react';
-import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, PartyPopper, FileText, ShoppingCart } from 'lucide-react';
 
 interface Booking {
       _id: string;
@@ -79,9 +79,9 @@ export default function CalendarGrid({ bookings }: Props) {
 
       const getTypeIcon = (type?: string) => {
             switch (type) {
-                  case 'lease': return '📝';
-                  case 'market-booth': return '🛒';
-                  default: return '🎉';
+                  case 'lease': return <FileText className="w-3 h-3" />;
+                  case 'market-booth': return <ShoppingCart className="w-3 h-3" />;
+                  default: return <PartyPopper className="w-3 h-3" />;
             }
       };
 
@@ -97,43 +97,43 @@ export default function CalendarGrid({ bookings }: Props) {
       };
 
       return (
-      <div className="bg-white rounded-xl border border-[#e8e4dc] shadow-sm overflow-hidden">
+      <div className="bg-white rounded-xl border border-[#e5e7eb] shadow-sm overflow-hidden">
             
 {/* ── Header ── */}
-            <div className="px-6 py-4 border-b border-[#e8e4dc] bg-[#faf9f7] flex flex-wrap items-center justify-between gap-3">
+            <div className="px-6 py-4 border-b border-[#e5e7eb] bg-[#f9fafb] flex flex-wrap items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
                         <button
                               onClick={prevMonth}
-                              className="p-2 hover:bg-[#f0ece6] rounded-md transition"
+                              className="p-2 hover:bg-[#f3f4f6] rounded-md transition"
                               aria-label="Previous month"
                         >
-                        <ChevronLeft className="w-5 h-5 text-[#6a5a4a]" />
+                        <ChevronLeft className="w-5 h-5 text-[#6b7280]" />
                         </button>
-                        <h2 className="text-lg font-light tracking-wide">
+                        <h2 className="text-lg font-light tracking-wide text-gray-900">
                               {monthNames[month]} {year}
                         </h2>
                         <button
                               onClick={nextMonth}
-                              className="p-2 hover:bg-[#f0ece6] rounded-md transition"
+                              className="p-2 hover:bg-[#f3f4f6] rounded-md transition"
                               aria-label="Next month"
                         >
-                        <ChevronRight className="w-5 h-5 text-[#6a5a4a]" />
+                        <ChevronRight className="w-5 h-5 text-[#6b7280]" />
                         </button>
                   </div>
                   <button
                         onClick={goToToday}
-                        className="px-4 py-1.5 rounded-md border border-[#e8e4dc] hover:bg-[#f0ece6] transition text-sm text-[#6a5a4a]"
+                        className="px-4 py-1.5 rounded-md border border-[#e5e7eb] hover:bg-[#f3f4f6] transition text-sm text-[#6b7280]"
                   >
                         Today
                   </button>
             </div>
 
 {/* ── Day headers ── */}
-      <div className="grid grid-cols-7 gap-px bg-[#e8e4dc]">
+      <div className="grid grid-cols-7 gap-px bg-[#e5e7eb]">
             {dayNames.map((day) => (
             <div
                   key={day}
-                  className="py-2 text-center text-xs font-semibold text-[#8a7a6a] uppercase tracking-wider bg-[#f5f3ef]"
+                  className="py-2 text-center text-xs font-semibold text-[#6b7280] uppercase tracking-wider bg-[#f3f4f6]"
             >
                   {day}
             </div>
@@ -141,7 +141,7 @@ export default function CalendarGrid({ bookings }: Props) {
             </div>
 
 {/* ── Calendar grid ── */}
-            <div className="grid grid-cols-7 gap-px bg-[#e8e4dc]">
+            <div className="grid grid-cols-7 gap-px bg-[#e5e7eb]">
                   {/* Empty days before the 1st */}
                   {Array.from({ length: firstDayIndex }).map((_, i) => (
                   <div
@@ -161,13 +161,13 @@ export default function CalendarGrid({ bookings }: Props) {
             return (
                   <div
                         key={day}
-                              className={`bg-white min-h-25 p-1.5 transition hover:bg-[#faf9f7] ${
-                              isToday ? 'ring-2 ring-[#A03A3A] ring-inset' : ''
-                        }`}
+                        className="bg-white min-h-25 p-1.5 transition hover:bg-[#f9fafb]"
+                        style={isToday ? { boxShadow: 'inset 0 0 0 2px var(--admin-primary)' } : {}}
                   >
-                  <span className={`text-sm font-medium px-2 py-0.5 rounded-full inline-block ${
-                  isToday ? 'bg-[#A03A3A] text-white' : 'text-[#1c1c1e]'
-                  }`}>
+                  <span
+                    className="text-sm font-medium px-2 py-0.5 rounded-full inline-block"
+                    style={isToday ? { background: 'var(--admin-primary)', color: '#fff' } : { color: '#111827' }}
+                  >
                         {day}
                   </span>
 
@@ -177,16 +177,16 @@ export default function CalendarGrid({ bookings }: Props) {
                               <button
                                     key={b._id}
                                     onClick={() => openModal(b)}
-                                    className="w-full text-left text-xs truncate flex items-center gap-1 px-1.5 py-0.5 rounded hover:bg-[#f0ece6] transition"
+                                    className="w-full text-left text-xs truncate flex items-center gap-1 px-1.5 py-0.5 rounded hover:bg-[#f3f4f6] transition"
                               >
                                     <span className={`w-2 h-2 rounded-full shrink-0 ${getStatusColor(b.paymentStatus)}`} />
-                                    <span className="text-[#6a5a4a] truncate">
+                                    <span className="text-[#6b7280] truncate">
                                           {getTypeIcon(b.bookingType)} {b.clientName}
                                     </span>
                               </button>
                   ))}
                   {dayBookings.length > 3 && (
-                        <div className="text-[10px] text-[#8a7a6a] pl-1.5">
+                        <div className="text-[10px] text-[#6b7280] pl-1.5">
                               +{dayBookings.length - 3} more
                         </div>
                   )}
@@ -197,7 +197,7 @@ export default function CalendarGrid({ bookings }: Props) {
       </div>
 
 {/* ── Legend ── */}
-      <div className="px-6 py-3 border-t border-[#e8e4dc] bg-[#faf9f7] flex flex-wrap items-center gap-4 text-xs text-[#6a5a4a]">
+      <div className="px-6 py-3 border-t border-[#e5e7eb] bg-[#f9fafb] flex flex-wrap items-center gap-4 text-xs text-[#6b7280]">
             <span className="flex items-center gap-1.5">
                   <span className="w-3 h-3 rounded-full bg-emerald-500" />
             Paid
@@ -211,15 +211,15 @@ export default function CalendarGrid({ bookings }: Props) {
             Unpaid
             </span>
             <span className="flex items-center gap-1.5 ml-4">
-                  🎉 Party
+                  <PartyPopper className="w-3 h-3" /> Party
             </span>
             <span className="flex items-center gap-1.5">
-                  📝 Lease
+                  <FileText className="w-3 h-3" /> Lease
             </span>
             <span className="flex items-center gap-1.5">
-                  🛒 Market
+                  <ShoppingCart className="w-3 h-3" /> Market
             </span>
-            <span className="ml-auto text-[#8a7a6a]">
+            <span className="ml-auto text-[#6b7280]">
                   {monthBookings.length} events this month
             </span>
       </div>
@@ -237,20 +237,20 @@ export default function CalendarGrid({ bookings }: Props) {
             <div className="flex justify-between items-start mb-4">
                   <div>
                         <h3 className="text-xl font-light tracking-wide">{selectedBooking.clientName}</h3>
-                        <p className="text-sm text-[#8a7a6a]">{selectedBooking.accountNumber}</p>
+                        <p className="text-sm text-[#6b7280]">{selectedBooking.accountNumber}</p>
                   </div>
                   <button
                         onClick={closeModal}
-                        className="p-1 hover:bg-[#f0ece6] rounded-md transition"
+                        className="p-1 hover:bg-[#f3f4f6] rounded-md transition"
                   >
-                        <X className="w-5 h-5 text-[#6a5a4a]" />
+                        <X className="w-5 h-5 text-[#6b7280]" />
                   </button>
             </div>
 
             <div className="space-y-2 text-sm">
-                  <div className="flex justify-between py-1.5 border-b border-[#f0ece6]">
-                        <span className="text-[#8a7a6a]">Date</span>
-                        <span className="text-[#1c1c1e]">
+                  <div className="flex justify-between py-1.5 border-b border-[#f3f4f6]">
+                        <span className="text-[#6b7280]">Date</span>
+                        <span className="text-[#111827]">
                               {new Date(selectedBooking.eventDate).toLocaleDateString('en-US', {
                                     weekday: 'long',
                                     month: 'long',
@@ -259,35 +259,37 @@ export default function CalendarGrid({ bookings }: Props) {
                         })}
                         </span>
                   </div>
-            <div className="flex justify-between py-1.5 border-b border-[#f0ece6]">
-                  <span className="text-[#8a7a6a]">Time</span>
-                  <span className="text-[#1c1c1e]">
+            <div className="flex justify-between py-1.5 border-b border-[#f3f4f6]">
+                  <span className="text-[#6b7280]">Time</span>
+                  <span className="text-[#111827]">
                         {new Date(selectedBooking.eventDate).toLocaleTimeString('en-US', {
                         hour: '2-digit',
                         minute: '2-digit',
                         })}
                   </span>
             </div>
-            <div className="flex justify-between py-1.5 border-b border-[#f0ece6]">
-                  <span className="text-[#8a7a6a]">Type</span>
-                  <span className="text-[#1c1c1e]">
-                        {selectedBooking.bookingType === 'lease' ? '📝 Lease' :
-                        selectedBooking.bookingType === 'market-booth' ? '🛒 Market Booth' :
-                        '🎉 Party / Event'}
+            <div className="flex justify-between py-1.5 border-b border-[#f3f4f6]">
+                  <span className="text-[#6b7280]">Type</span>
+                  <span className="text-[#111827]">
+                        <span className="flex items-center gap-1.5">
+                          {selectedBooking.bookingType === 'lease' ? <><FileText className="w-3.5 h-3.5" /> Lease</> :
+                          selectedBooking.bookingType === 'market-booth' ? <><ShoppingCart className="w-3.5 h-3.5" /> Market Booth</> :
+                          <><PartyPopper className="w-3.5 h-3.5" /> Party / Event</>}
+                        </span>
                   </span>
             </div>
             {selectedBooking.assignedSpace && (
-                  <div className="flex justify-between py-1.5 border-b border-[#f0ece6]">
-                        <span className="text-[#8a7a6a]">Space</span>
-                        <span className="text-[#1c1c1e] font-mono">{selectedBooking.assignedSpace}</span>
+                  <div className="flex justify-between py-1.5 border-b border-[#f3f4f6]">
+                        <span className="text-[#6b7280]">Space</span>
+                        <span className="text-[#111827] font-mono">{selectedBooking.assignedSpace}</span>
                   </div>
             )}
-            <div className="flex justify-between py-1.5 border-b border-[#f0ece6]">
-                  <span className="text-[#8a7a6a]">Guests</span>
-                  <span className="text-[#1c1c1e]">{selectedBooking.guestCount || '—'}</span>
+            <div className="flex justify-between py-1.5 border-b border-[#f3f4f6]">
+                  <span className="text-[#6b7280]">Guests</span>
+                  <span className="text-[#111827]">{selectedBooking.guestCount || '—'}</span>
             </div>
-            <div className="flex justify-between py-1.5 border-b border-[#f0ece6]">
-                  <span className="text-[#8a7a6a]">Status</span>
+            <div className="flex justify-between py-1.5 border-b border-[#f3f4f6]">
+                  <span className="text-[#6b7280]">Status</span>
                   <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
                         selectedBooking.paymentStatus === 'paid'
                               ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
@@ -303,13 +305,13 @@ export default function CalendarGrid({ bookings }: Props) {
             <div className="mt-6 flex gap-3">
                   <a
                         href={`/admin/edit/${selectedBooking._id}`}
-                        className="flex-1 text-center px-4 py-2 rounded-md bg-[#1c1c1e] text-white hover:bg-[#2c2c2e] transition text-sm"
+                        className="flex-1 text-center px-4 py-2 rounded-md btn-primary transition text-sm"
                   >
                         Edit Booking
                   </a>
                   <button
                         onClick={closeModal}
-                        className="px-4 py-2 rounded-md border border-[#e8e4dc] hover:bg-[#f0ece6] transition text-sm"
+                        className="px-4 py-2 rounded-md border border-[#e5e7eb] hover:bg-[#f3f4f6] transition text-sm"
                   >
                         Close
                   </button>

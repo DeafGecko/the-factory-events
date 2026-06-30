@@ -2,6 +2,7 @@
 // React edit form for updating booking details
 
 import { useState } from 'react';
+import { CheckCircle, XCircle } from 'lucide-react';
 
 interface Booking {
       _id: string;
@@ -143,30 +144,30 @@ const handleReset = () => {
 return (
       <form
             onSubmit={handleSubmit}
-            className="bg-white rounded-lg shadow-card p-6 border border-[#e8e4dc]/50 space-y-6"
+            className="bg-white rounded-lg shadow-card p-6 border border-[#e5e7eb]/50 space-y-6"
       >
 {/* Success Message */}
             {success && (
-                  <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-md text-sm">
-                  ✅ Booking updated successfully! Redirecting...
+                  <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-md text-sm flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 shrink-0" /> Booking updated successfully! Redirecting...
                   </div>
             )}
 
 {/* Error Message */}
             {error && (
-                  <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md text-sm">
-                  ❌ {error}
+                  <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md text-sm flex items-center gap-2">
+                  <XCircle className="w-4 h-4 shrink-0" /> {error}
                   </div>
             )}
 
 {/* Account / Created Info */}
-            <div className="grid grid-cols-2 gap-4 pb-4 border-b border-[#e8e4dc]/40">
+            <div className="grid grid-cols-2 gap-4 pb-4 border-b border-[#e5e7eb]/40">
                   <div>
-                        <label className="block text-xs font-medium text-[#8e8e93] uppercase tracking-wider">Account Number</label>
-                        <p className="mt-1 font-mono text-sm text-[#1c1c1e]">{booking.accountNumber}</p>
+                        <label className="block text-xs font-medium text-[#6b7280] uppercase tracking-wider">Account Number</label>
+                        <p className="mt-1 font-mono text-sm text-[#111827]">{booking.accountNumber}</p>
                   </div>
                   <div>
-                        <label className="block text-xs font-medium text-[#8e8e93] uppercase tracking-wider">Created</label>
+                        <label className="block text-xs font-medium text-[#6b7280] uppercase tracking-wider">Created</label>
                         <p className="mt-1 text-sm text-[#555]">
                         {new Date(booking.createdAt).toLocaleDateString('en-US', {
                               month: 'short',
@@ -182,7 +183,7 @@ return (
 {/* Client Info */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                        <label htmlFor="clientName" className="block text-sm font-medium text-[#1c1c1e]">
+                        <label htmlFor="clientName" className="block text-sm font-medium text-[#111827]">
                               Client Name *
                         </label>
                         <input
@@ -192,11 +193,11 @@ return (
                               value={formData.clientName}
                               onChange={handleChange}
                               required
-                              className="mt-1 w-full border border-[#e8e4dc] rounded-md px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#1c1c1e]"
+                              className="mt-1 w-full border border-[#e5e7eb] rounded-md px-4 py-2.5 ring-primary"
                         />
                   </div>
                   <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-[#1c1c1e]">
+                        <label htmlFor="email" className="block text-sm font-medium text-[#111827]">
                               Email *
                         </label>
                         <input
@@ -206,13 +207,13 @@ return (
                               value={formData.email}
                               onChange={handleChange}
                               required
-                              className="mt-1 w-full border border-[#e8e4dc] rounded-md px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#1c1c1e]"
+                              className="mt-1 w-full border border-[#e5e7eb] rounded-md px-4 py-2.5 ring-primary"
                         />
                         </div>
                   </div>
 
                   <div>
-                        <label htmlFor="phone" className="block text-sm font-medium text-[#1c1c1e]">
+                        <label htmlFor="phone" className="block text-sm font-medium text-[#111827]">
                               Phone
                         </label>
                         <input
@@ -221,14 +222,14 @@ return (
                               name="phone"
                               value={formData.phone}
                               onChange={handleChange}
-                              className="mt-1 w-full border border-[#e8e4dc] rounded-md px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#1c1c1e]"
+                              className="mt-1 w-full border border-[#e5e7eb] rounded-md px-4 py-2.5 ring-primary"
                         />
                   </div>
 
 {/* Booking Category & Space Type */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                        <label htmlFor="bookingType" className="block text-sm font-medium text-[#1c1c1e]">
+                        <label htmlFor="bookingType" className="block text-sm font-medium text-[#111827]">
                               Booking Category
                         </label>
                         <select
@@ -236,7 +237,7 @@ return (
                               name="bookingType"
                               value={formData.bookingType}
                               onChange={handleChange}
-                              className="mt-1 w-full border border-[#e8e4dc] rounded-md px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#1c1c1e]"
+                              className="mt-1 w-full border border-[#e5e7eb] rounded-md px-4 py-2.5 ring-primary"
                         >
                               <option value="party">Party / Event</option>
                               <option value="lease">Lease / Rental</option>
@@ -244,7 +245,7 @@ return (
                         </select>
                   </div>
                   <div>
-                        <label htmlFor="spaceType" className="block text-sm font-medium text-[#1c1c1e]">
+                        <label htmlFor="spaceType" className="block text-sm font-medium text-[#111827]">
                               Space Type
                   </label>
                   <select
@@ -252,7 +253,7 @@ return (
                         name="spaceType"
                         value={formData.spaceType}
                         onChange={handleChange}
-                        className="mt-1 w-full border border-[#e8e4dc] rounded-md px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#1c1c1e]"
+                        className="mt-1 w-full border border-[#e5e7eb] rounded-md px-4 py-2.5 ring-primary"
                   >
                         <option value="">Select type</option>
                         <option value="party">Party Room</option>
@@ -263,18 +264,18 @@ return (
             </div>
 {/* Assigned Space – Dropdown from Spaces API */}
             <div>
-                  <label htmlFor="assignedSpace" className="block text-sm font-medium text-[#1c1c1e]">
+                  <label htmlFor="assignedSpace" className="block text-sm font-medium text-[#111827]">
                         Assigned Space
                   </label>
                   {spacesLoading ? (
-                        <div className="mt-1 text-sm text-[#8e8e93]">Loading spaces...</div>
+                        <div className="mt-1 text-sm text-[#6b7280]">Loading spaces...</div>
                   ) : (
                   <select
                         id="assignedSpace"
                         name="assignedSpace"
                         value={formData.assignedSpace || ''}
                         onChange={handleChange}
-                        className="mt-1 w-full border border-[#e8e4dc] rounded-md px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#1c1c1e]"
+                        className="mt-1 w-full border border-[#e5e7eb] rounded-md px-4 py-2.5 ring-primary"
                   >
                         <option value="">— Select a space —</option>
                         {spaces.map((s) => (
@@ -289,7 +290,7 @@ return (
 {/* Event Date */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                        <label htmlFor="eventDate" className="block text-sm font-medium text-[#1c1c1e]">
+                        <label htmlFor="eventDate" className="block text-sm font-medium text-[#111827]">
                               Event Date & Time *
                         </label>
                         <input
@@ -299,12 +300,12 @@ return (
                               value={formData.eventDate}
                               onChange={handleChange}
                               required
-                              className="mt-1 w-full border border-[#e8e4dc] rounded-md px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#1c1c1e]"
+                              className="mt-1 w-full border border-[#e5e7eb] rounded-md px-4 py-2.5 ring-primary"
                         />
                   </div>
 {/* Event Type */}
                   <div>
-                        <label htmlFor="eventType" className="block text-sm font-medium text-[#1c1c1e]">
+                        <label htmlFor="eventType" className="block text-sm font-medium text-[#111827]">
                               Event Type
                         </label>
                         <select
@@ -312,7 +313,7 @@ return (
                               name="eventType"
                               value={formData.eventType}
                               onChange={handleChange}
-                              className="mt-1 w-full border border-[#e8e4dc] rounded-md px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#1c1c1e]"
+                              className="mt-1 w-full border border-[#e5e7eb] rounded-md px-4 py-2.5 ring-primary"
                         >
                               <option value="wedding">Wedding</option>
                               <option value="corporate">Corporate</option>
@@ -325,7 +326,7 @@ return (
 
 {/* Guests */}
             <div>
-                  <label htmlFor="guestCount" className="block text-sm font-medium text-[#1c1c1e]">
+                  <label htmlFor="guestCount" className="block text-sm font-medium text-[#111827]">
                         Number of Guests *
                   </label>
                   <input
@@ -337,14 +338,14 @@ return (
                         min="1"
                         max="1000"
                         required
-                        className="mt-1 w-full border border-[#e8e4dc] rounded-md px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#1c1c1e]"
+                        className="mt-1 w-full border border-[#e5e7eb] rounded-md px-4 py-2.5 ring-primary"
                   />
             </div>
 
 {/* Financial */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                        <label htmlFor="totalPrice" className="block text-sm font-medium text-[#1c1c1e]">
+                        <label htmlFor="totalPrice" className="block text-sm font-medium text-[#111827]">
                               Total Price ($)
                         </label>
                         <input
@@ -355,11 +356,11 @@ return (
                               onChange={handleChange}
                               min="0"
                               step="0.01"
-                              className="mt-1 w-full border border-[#e8e4dc] rounded-md px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#1c1c1e]"
+                              className="mt-1 w-full border border-[#e5e7eb] rounded-md px-4 py-2.5 ring-primary"
                         />
                   </div>
                   <div>
-                        <label htmlFor="amountPaid" className="block text-sm font-medium text-[#1c1c1e]">
+                        <label htmlFor="amountPaid" className="block text-sm font-medium text-[#111827]">
                               Amount Paid ($)
                         </label>
                         <input
@@ -370,11 +371,11 @@ return (
                               onChange={handleChange}
                               min="0"
                               step="0.01"
-                              className="mt-1 w-full border border-[#e8e4dc] rounded-md px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#1c1c1e]"
+                              className="mt-1 w-full border border-[#e5e7eb] rounded-md px-4 py-2.5 ring-primary"
                         />
                   </div>
                   <div>
-                        <label className="block text-sm font-medium text-[#1c1c1e]">Balance</label>
+                        <label className="block text-sm font-medium text-[#111827]">Balance</label>
                         <p className={`mt-1 text-lg font-medium ${balance > 0 ? 'text-red-600' : 'text-green-600'}`}>
                               ${balance.toFixed(2)}
                         </p>
@@ -383,7 +384,7 @@ return (
 
 {/* Payment Status */}
             <div>
-                  <label htmlFor="paymentStatus" className="block text-sm font-medium text-[#1c1c1e]">
+                  <label htmlFor="paymentStatus" className="block text-sm font-medium text-[#111827]">
                         Payment Status
                   </label>
                   <select
@@ -391,7 +392,7 @@ return (
                         name="paymentStatus"
                         value={formData.paymentStatus}
                         onChange={handleChange}
-                        className="mt-1 w-full border border-[#e8e4dc] rounded-md px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#1c1c1e]"
+                        className="mt-1 w-full border border-[#e5e7eb] rounded-md px-4 py-2.5 ring-primary"
                   >
                         <option value="unpaid">Unpaid</option>
                         <option value="partial">Partial</option>
@@ -401,7 +402,7 @@ return (
 
 {/* Notes */}
             <div>
-                  <label htmlFor="notes" className="block text-sm font-medium text-[#1c1c1e]">
+                  <label htmlFor="notes" className="block text-sm font-medium text-[#111827]">
                         Notes
                   </label>
                   <textarea
@@ -410,17 +411,17 @@ return (
                         value={formData.notes}
                         onChange={handleChange}
                         rows={4}
-                        className="mt-1 w-full border border-[#e8e4dc] rounded-md px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#1c1c1e]"
+                        className="mt-1 w-full border border-[#e5e7eb] rounded-md px-4 py-2.5 ring-primary"
                         placeholder="Add internal notes about this booking..."
                   />
             </div>
 
 {/* Buttons */}
-            <div className="flex gap-3 pt-4 border-t border-[#e8e4dc]/40">
+            <div className="flex gap-3 pt-4 border-t border-[#e5e7eb]/40">
                   <button
                         type="submit"
                         disabled={loading}
-                        className="px-6 py-2.5 rounded-md bg-[#1c1c1e] text-white hover:bg-[#2c2c2e] transition text-sm disabled:opacity-50"
+                        className="px-6 py-2.5 rounded-md btn-primary transition text-sm disabled:opacity-50"
                   >
                         {loading ? 'Saving...' : 'Save Changes'}
                   </button>
@@ -428,13 +429,13 @@ return (
                         type="button"
                         onClick={handleReset}
                         disabled={loading}
-                        className="px-6 py-2.5 rounded-md border border-[#e8e4dc] hover:bg-gray-50 transition text-sm disabled:opacity-50"
+                        className="px-6 py-2.5 rounded-md border border-[#e5e7eb] hover:bg-gray-50 transition text-sm disabled:opacity-50"
                   >
                         Reset
                   </button>
                   <a
                         href="/admin"
-                        className="px-6 py-2.5 rounded-md text-[#8e8e93] hover:text-[#1c1c1e] transition text-sm ml-auto"
+                        className="px-6 py-2.5 rounded-md text-[#6b7280] hover:text-[#111827] transition text-sm ml-auto"
                   >
                         Cancel
                   </a>

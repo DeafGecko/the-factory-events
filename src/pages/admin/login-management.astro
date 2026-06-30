@@ -1,0 +1,18 @@
+---
+// src/pages/admin/login-management.astro
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import UsersTable from '../../components/admin/UsersTable';
+---
+
+<AdminLayout title="Login Management">
+      <section>
+            <header class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                  <div>
+                  <h2 class="text-xl font-light tracking-wide">Admin Login Management</h2>
+                  <p class="text-sm text-[#8e8e93]">Manage admin accounts – roles, passwords, and access</p>
+                  </div>
+            </header>
+
+            <UsersTable client:load />
+      </section>
+</AdminLayout>

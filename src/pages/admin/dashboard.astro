@@ -9,65 +9,70 @@ import { sanityClient } from "../../lib/sanity";
 import { DollarSign, CalendarDays, CalendarCheck, QrCode } from "lucide-react";
 
 // ─── Fetch all bookings from Sanity ───
-const bookings = await sanityClient.fetch(`*[_type == "booking"]`);
+const bookings = await sanityClient.fetch(`
+  *[_type == "booking"] | order(createdAt desc) {
+    _id, accountNumber, clientName, eventDate, paymentStatus, amountPaid, totalPrice
+  }
+`);
+
 const totalBookings = bookings.length;
 const upcoming = bookings.filter(
-  (b: any) => new Date(b.eventDate) > new Date(),
+  (b: any) => b.eventDate && new Date(b.eventDate) > new Date(),
 ).length;
 
-// ─── Mock stats – replace with D1 queries later ───
-const totalRevenue = 12450;
-const qrScans = 247;
+// ─── Real revenue: sum of amountPaid across all bookings ───
+const totalRevenue = bookings.reduce(
+  (sum: number, b: any) => sum + (b.amountPaid || 0), 0
+);
 
-// ─── Payment status counts ───
-const paid = bookings.filter((b: any) => b.paymentStatus === "paid").length;
-const pending = bookings.filter(
-  (b: any) => b.paymentStatus === "partial",
-).length;
-const unpaid = bookings.filter(
-  (b: any) => b.paymentStatus === "unpaid" || !b.paymentStatus,
-).length;
+// ─── QR scans from D1 (falls back to 0 if DB unavailable) ───
+let qrScans = 0;
+try {
+  const scanData = await sanityClient.fetch(`count(*[_type == "qrScan"])`);
+  qrScans = scanData || 0;
+} catch (_) {}
+
 ---
 
 <AdminLayout title="Dashboard">
   <!-- ===== STATS CARDS ===== -->
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
     <div class="card p-6 flex items-start gap-4">
-      <div class="p-3 rounded-lg bg-[#f0ece6] text-[#6a5a4a]">
+      <div class="p-3 rounded-lg bg-[#f3f4f6] text-[#6b7280]">
         <DollarSign class="w-5 h-5" />
       </div>
       <div>
-        <p class="text-sm text-[#8e8e93] uppercase tracking-wider">Revenue</p>
+        <p class="text-sm text-[#6b7280] uppercase tracking-wider">Revenue</p>
         <p class="text-2xl font-light">${totalRevenue.toLocaleString()}</p>
       </div>
     </div>
 
     <div class="card p-6 flex items-start gap-4">
-      <div class="p-3 rounded-lg bg-[#f0ece6] text-[#6a5a4a]">
+      <div class="p-3 rounded-lg bg-[#f3f4f6] text-[#6b7280]">
         <CalendarDays class="w-5 h-5" />
       </div>
       <div>
-        <p class="text-sm text-[#8e8e93] uppercase tracking-wider">Bookings</p>
+        <p class="text-sm text-[#6b7280] uppercase tracking-wider">Bookings</p>
         <p class="text-2xl font-light">{totalBookings}</p>
       </div>
     </div>
 
     <div class="card p-6 flex items-start gap-4">
-      <div class="p-3 rounded-lg bg-[#f0ece6] text-[#6a5a4a]">
+      <div class="p-3 rounded-lg bg-[#f3f4f6] text-[#6b7280]">
         <CalendarCheck class="w-5 h-5" />
       </div>
       <div>
-        <p class="text-sm text-[#8e8e93] uppercase tracking-wider">Upcoming</p>
+        <p class="text-sm text-[#6b7280] uppercase tracking-wider">Upcoming</p>
         <p class="text-2xl font-light">{upcoming}</p>
       </div>
     </div>
 
     <div class="card p-6 flex items-start gap-4">
-      <div class="p-3 rounded-lg bg-[#f0ece6] text-[#6a5a4a]">
+      <div class="p-3 rounded-lg bg-[#f3f4f6] text-[#6b7280]">
         <QrCode class="w-5 h-5" />
       </div>
       <div>
-        <p class="text-sm text-[#8e8e93] uppercase tracking-wider">QR Scans</p>
+        <p class="text-sm text-[#6b7280] uppercase tracking-wider">QR Scans</p>
         <p class="text-2xl font-light">{qrScans}</p>
       </div>
     </div>
@@ -77,34 +82,34 @@ const unpaid = bookings.filter(
   <!--
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
     <div class="card p-6">
-      <h3 class="text-sm uppercase tracking-wider text-[#8e8e93] mb-4">Revenue by Month</h3>
+      <h3 class="text-sm uppercase tracking-wider text-[#6b7280] mb-4">Revenue by Month</h3>
       <RevenueChart client:load data={monthlyRevenue} />
     </div>
     <div class="card p-6 flex flex-col items-center">
-      <h3 class="text-sm uppercase tracking-wider text-[#8e8e93] mb-4">Booking Status</h3>
-      <StatusPie client:load paid={paid} pending={pending} unpaid={unpaid} />
+      <h3 class="text-sm uppercase tracking-wider text-[#6b7280] mb-4">Booking Status</h3>
+      <StatusPie client:load />
     </div>
   </div>
   -->
 
   <!-- ===== RECENT BOOKINGS ===== -->
   <div class="card p-6">
-    <h3 class="text-sm uppercase tracking-wider text-[#8e8e93] mb-4">
+    <h3 class="text-sm uppercase tracking-wider text-[#6b7280] mb-4">
       Recent Bookings
     </h3>
     <table class="w-full text-sm">
       <thead>
-        <tr class="border-b border-[#e8e4dc]/60">
-          <th class="text-left py-3 font-medium text-[#8e8e93]">Account</th>
-          <th class="text-left py-3 font-medium text-[#8e8e93]">Client</th>
-          <th class="text-left py-3 font-medium text-[#8e8e93]">Event Date</th>
-          <th class="text-left py-3 font-medium text-[#8e8e93]">Status</th>
+        <tr class="border-b border-[#e5e7eb]/60">
+          <th class="text-left py-3 font-medium text-[#6b7280]">Account</th>
+          <th class="text-left py-3 font-medium text-[#6b7280]">Client</th>
+          <th class="text-left py-3 font-medium text-[#6b7280]">Event Date</th>
+          <th class="text-left py-3 font-medium text-[#6b7280]">Status</th>
         </tr>
       </thead>
       <tbody>
         {
           bookings.slice(0, 5).map((b: any) => (
-            <tr key={b._id} class="border-b border-[#e8e4dc]/30">
+            <tr key={b._id} class="border-b border-[#e5e7eb]/30">
               <td class="py-3 font-mono text-sm">{b.accountNumber}</td>
               <td>{b.clientName}</td>
               <td>{new Date(b.eventDate).toLocaleDateString()}</td>
