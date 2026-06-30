@@ -2,7 +2,6 @@
 // src/pages/admin/edit/[id].astro
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import { sanityClient } from '../../../lib/sanity';
-import Card from '../../../components/ui/Card.astro';
 import BookingEditForm from '../../../components/admin/BookingEditForm';
 
 const { id } = Astro.params;
@@ -44,13 +43,13 @@ const formattedEventDate = booking.eventDate
         <h2 class="text-xl font-light tracking-wide">Edit Booking</h2>
         <p class="text-sm text-[#8e8e93]">{booking.accountNumber} · {booking.clientName}</p>
       </div>
-      <a href="/admin" class="inline-block">
-        <Button variant="outline">← Back to Bookings</Button>
+      <a href="/admin" class="inline-block px-4 py-2 rounded-lg border border-[#e8e4dc] text-sm hover:bg-[#f5f3ef] transition">
+        ← Back to Bookings
       </a>
     </header>
 
-    <Card>
+    <div class="bg-white rounded-xl border border-[#e8e4dc] shadow-sm p-6">
       <BookingEditForm client:load booking={booking} formattedEventDate={formattedEventDate} />
-    </Card>
+    </div>
   </section>
 </AdminLayout>

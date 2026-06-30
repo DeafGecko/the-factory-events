@@ -1,6 +1,6 @@
 // src/pages/api/admin/spaces/[id].ts
 import type { APIRoute } from 'astro';
-import { sanityClient } from '../../../lib/sanity';
+import { sanityClient } from '../../../../lib/sanity';
 
 // PUT: Update a space or Restore a space
 export const PUT: APIRoute = async ({ params, request }) => {
