@@ -4,7 +4,6 @@
 
 import AdminLayout from '../../layouts/AdminLayout.astro';
 import SettingsForm from '../../components/admin/SettingsForm';
-import CSVImport from '../../components/admin/CSVImport';
 ---
 
 <AdminLayout title="Settings">
@@ -13,6 +12,7 @@ import CSVImport from '../../components/admin/CSVImport';
             <p class="text-sm text-[#8e8e93]">Manage venue branding, colors, fees, and contact info.</p>
       </div>
 
-      <SettingsForm client:load />
-      <CSVImport client:load />
+      <div class="bg-white rounded-xl border border-[#e5e7eb] shadow-sm p-6">
+        <SettingsForm client:load />
+      </div>
 </AdminLayout>

@@ -29,6 +29,7 @@ import {
   Tag,
   MessageSquare,
   PackageCheck,
+  Database,
 } from "lucide-react";
 
 export interface Props {
@@ -58,6 +59,7 @@ const defaults = {
   font: "Inter, system-ui, -apple-system, sans-serif",
   logo: "/logo.svg",
   venueName: "Venue Operations",
+  tagline: "Operations Platform",
 };
 
 // ── Merge settings with defaults ──
@@ -74,6 +76,7 @@ const c = {
   font: settings?.fontFamily || defaults.font,
   logo: settings?.logo?.asset?.url || defaults.logo,
   venueName: settings?.venueName || defaults.venueName,
+  tagline: settings?.tagline || defaults.tagline,
 };
 
 const currentYear = new Date().getFullYear();
@@ -122,6 +125,12 @@ const navGroups = [
     items: [
       { href: "/admin/reports", icon: BarChart, label: "Reports" },
       { href: "/admin/pricing", icon: Tag, label: "Pricing" },
+    ],
+  },
+  {
+    label: "Data",
+    items: [
+      { href: "/admin/data-management", icon: Database, label: "Data Management" },
     ],
   },
 ];
@@ -415,13 +424,19 @@ const activePath = Astro.url.pathname;
         class="sidebar w-52 shrink-0 m-4 rounded-lg flex flex-col overflow-hidden"
         style="display: flex !important;"
       >
-        <header class="px-5 pt-5 pb-2 border-b border-white/10 shrink-0">
-          <div class="flex items-center justify-between mb-1">
-            <img
-              src={c.logo}
-              alt={c.venueName}
-              class="h-9 w-auto max-w-30 object-contain"
-            />
+        <header class="px-4 pt-4 pb-3 border-b border-white/10 shrink-0">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <img
+                src={c.logo}
+                alt={c.venueName}
+                class="h-8 w-8 object-contain shrink-0"
+              />
+              <div class="min-w-0">
+                <p class="text-[0.7rem] font-semibold leading-tight truncate" style="color: var(--admin-sidebar-text);">{c.venueName}</p>
+                <p class="text-[0.55rem] leading-tight truncate sidebar-muted">{c.tagline}</p>
+              </div>
+            </div>
             <button
               class="hamburger lg:hidden"
               id="menu-close"
