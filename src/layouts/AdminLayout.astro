@@ -234,10 +234,80 @@ const activePath = Astro.url.pathname;
       }
 
       html.dark {
-        --admin-bg: #1c1c1e;
-        --admin-text: #e5e7eb;
+        --admin-bg: #111827;
+        --admin-text: #f3f4f6;
         --admin-accent: #374151;
+        --admin-border: rgba(255,255,255,0.1);
+        --admin-muted: rgba(255,255,255,0.45);
       }
+
+      /* Cards & white surfaces */
+      html.dark .bg-white {
+        background-color: #1f2937 !important;
+      }
+      html.dark .bg-\[\#f9fafb\] {
+        background-color: #1a2332 !important;
+      }
+      html.dark .bg-\[\#f3f4f6\] {
+        background-color: #1a2332 !important;
+      }
+      html.dark .bg-\[\#fafafa\] {
+        background-color: #1e2a3a !important;
+      }
+
+      /* Borders */
+      html.dark .border-\[\#e5e7eb\] {
+        border-color: rgba(255,255,255,0.1) !important;
+      }
+      html.dark .divide-\[\#f3f4f6\] > * + * {
+        border-color: rgba(255,255,255,0.07) !important;
+      }
+
+      /* Text colors */
+      html.dark .text-\[\#111827\] { color: #f3f4f6 !important; }
+      html.dark .text-\[\#374151\] { color: #d1d5db !important; }
+      html.dark .text-\[\#6b7280\] { color: #9ca3af !important; }
+      html.dark .text-\[\#9ca3af\] { color: #6b7280 !important; }
+      html.dark .text-gray-900    { color: #f3f4f6 !important; }
+      html.dark .text-gray-400    { color: #6b7280 !important; }
+
+      /* Inputs & selects */
+      html.dark input:not([type="color"]):not([type="checkbox"]),
+      html.dark select,
+      html.dark textarea {
+        background-color: #1f2937 !important;
+        border-color: rgba(255,255,255,0.15) !important;
+        color: #f3f4f6 !important;
+      }
+      html.dark input::placeholder,
+      html.dark textarea::placeholder {
+        color: #4b5563 !important;
+      }
+
+      /* Icons — make lucide strokes lighter */
+      html.dark svg[stroke="currentColor"] {
+        color: #d1d5db;
+      }
+
+      /* Hover rows */
+      html.dark tr:hover td,
+      html.dark .hover\:bg-\[\#fafafa\]:hover,
+      html.dark .hover\:bg-\[\#f3f4f6\]:hover {
+        background-color: #263044 !important;
+      }
+
+      /* Badges — keep colored ones readable */
+      html.dark .bg-emerald-50  { background-color: rgba(16,185,129,0.15) !important; }
+      html.dark .bg-red-50      { background-color: rgba(239,68,68,0.15)  !important; }
+      html.dark .bg-amber-50    { background-color: rgba(245,158,11,0.15) !important; }
+      html.dark .bg-blue-50     { background-color: rgba(59,130,246,0.15) !important; }
+      html.dark .bg-purple-50   { background-color: rgba(139,92,246,0.15) !important; }
+      html.dark .bg-teal-50     { background-color: rgba(20,184,166,0.15) !important; }
+      html.dark .bg-orange-50   { background-color: rgba(249,115,22,0.15) !important; }
+
+      /* Modal overlay */
+      html.dark .fixed.inset-0.bg-black\/50 { background-color: rgba(0,0,0,0.7) !important; }
+      html.dark .bg-\[\#f3f4f6\].rounded-xl  { background-color: #1f2937 !important; }
 
       .main-header {
         border-bottom: 1px solid var(--admin-border);
@@ -360,6 +430,23 @@ const activePath = Astro.url.pathname;
         transition:
           background 0.15s,
           color 0.15s;
+      }
+
+      /* Theme toggle active state */
+      #theme-light[data-active="true"],
+      #theme-dark[data-active="true"] {
+        background: color-mix(in srgb, var(--admin-text) 12%, transparent);
+        color: var(--admin-text);
+      }
+      #theme-light[data-active="false"],
+      #theme-dark[data-active="false"] {
+        color: var(--admin-muted);
+        background: transparent;
+      }
+      #theme-light:hover,
+      #theme-dark:hover {
+        background: color-mix(in srgb, var(--admin-text) 10%, transparent) !important;
+        color: var(--admin-text) !important;
       }
 
       .btn-primary {
@@ -544,6 +631,40 @@ const activePath = Astro.url.pathname;
               {title}
             </h1>
             <div class="hidden lg:flex items-center gap-3">
+              <!-- ── Dark / Light toggle ── -->
+              <div class="flex items-center gap-0.5 rounded-full border p-0.5" style="border-color: var(--admin-border);">
+                <button id="theme-light" aria-label="Light mode" title="Light mode"
+                  class="w-7 h-7 rounded-full flex items-center justify-center transition text-(--admin-muted) hover:bg-(--admin-border)">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                    <line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                  </svg>
+                </button>
+                <button id="theme-dark" aria-label="Dark mode" title="Dark mode"
+                  class="w-7 h-7 rounded-full flex items-center justify-center transition text-(--admin-muted) hover:bg-(--admin-border)">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                  </svg>
+                </button>
+              </div>
+              <!-- ── Global Search ── -->
+              <div class="relative" id="global-search-wrap">
+                <div class="flex items-center gap-1.5 h-8 px-3 border rounded-full text-xs transition"
+                  style="border-color: var(--admin-border); background: var(--admin-bg); color: var(--admin-muted);">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  </svg>
+                  <input id="global-search-input" type="text" placeholder="Search…" autocomplete="off"
+                    class="bg-transparent outline-none w-36 text-xs placeholder:text-(--admin-muted)"
+                    style="color: var(--admin-text);" />
+                </div>
+                <div id="global-search-results" hidden
+                  class="absolute right-0 top-10 w-80 rounded-xl shadow-2xl border z-50 overflow-hidden launcher-panel"
+                  style="max-height: 400px; overflow-y: auto;">
+                </div>
+              </div>
               <!-- ── App Launcher ── -->
               <div class="relative" id="launcher-wrap">
                 <button
@@ -817,6 +938,77 @@ const activePath = Astro.url.pathname;
           avatarBtn?.focus();
         }
       });
+
+      // ── Global Search ──
+      const searchInput = document.getElementById('global-search-input') as HTMLInputElement;
+      const searchResults = document.getElementById('global-search-results') as HTMLDivElement;
+
+      const typeColors: Record<string, string> = {
+        booking: 'bg-blue-50 text-blue-700',
+        client:  'bg-emerald-50 text-emerald-700',
+        vendor:  'bg-orange-50 text-orange-700',
+        tenant:  'bg-purple-50 text-purple-700',
+        staff:   'bg-amber-50 text-amber-700',
+      };
+
+      let searchTimer: ReturnType<typeof setTimeout>;
+
+      searchInput?.addEventListener('input', () => {
+        clearTimeout(searchTimer);
+        const q = searchInput.value.trim();
+        if (q.length < 2) { searchResults.hidden = true; return; }
+        searchTimer = setTimeout(async () => {
+          const res = await fetch(`/api/admin/search?q=${encodeURIComponent(q)}`);
+          const items = await res.json();
+          if (!items.length) {
+            searchResults.innerHTML = `<div class="px-4 py-6 text-center text-xs" style="color:var(--admin-muted)">No results for "${q}"</div>`;
+          } else {
+            searchResults.innerHTML = items.map((r: any) => `
+              <a href="${r.href}" class="flex items-center gap-3 px-4 py-2.5 hover:bg-(--admin-border) transition border-b last:border-0" style="border-color:var(--admin-border)">
+                <span class="shrink-0 px-1.5 py-0.5 rounded text-[0.55rem] font-semibold uppercase ${typeColors[r.type] || ''}">${r.type}</span>
+                <span class="flex-1 min-w-0">
+                  <span class="block text-xs font-medium truncate" style="color:var(--admin-text)">${r.label}</span>
+                  <span class="block text-[0.6rem] truncate" style="color:var(--admin-muted)">${r.sub}${r.acct ? ' · #' + r.acct : ''}</span>
+                </span>
+              </a>`).join('');
+          }
+          searchResults.hidden = false;
+        }, 250);
+      });
+
+      searchInput?.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') { searchResults.hidden = true; searchInput.blur(); }
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!document.getElementById('global-search-wrap')?.contains(e.target as Node)) {
+          searchResults.hidden = true;
+        }
+      });
+
+      // ── Dark / Light toggle ──
+      const html = document.documentElement;
+      const lightBtn = document.getElementById("theme-light");
+      const darkBtn = document.getElementById("theme-dark");
+
+      function applyTheme(mode: string) {
+        if (mode === "dark") {
+          html.classList.add("dark");
+        } else {
+          html.classList.remove("dark");
+        }
+        // Mark active button with data-active attribute; CSS handles styling
+        lightBtn?.setAttribute("data-active", mode === "light" ? "true" : "false");
+        darkBtn?.setAttribute("data-active",  mode === "dark"  ? "true" : "false");
+        localStorage.setItem("theme", mode);
+      }
+
+      // Init from localStorage
+      const savedTheme = localStorage.getItem("theme") || (html.classList.contains("dark") ? "dark" : "light");
+      applyTheme(savedTheme);
+
+      lightBtn?.addEventListener("click", () => applyTheme("light"));
+      darkBtn?.addEventListener("click", () => applyTheme("dark"));
     </script>
   </body>
 </html>

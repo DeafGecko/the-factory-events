@@ -1,6 +1,7 @@
 // src/components/admin/SettingsForm.tsx
 import { useState, useEffect } from 'react';
 import { Image, CheckCircle, XCircle } from 'lucide-react';
+import CustomSelect from './CustomSelect';
 
 interface Settings {
   _id?: string;
@@ -37,6 +38,24 @@ const SectionTitle = ({ children }: { children: React.ReactNode }) => (
   <p className="text-[0.65rem] font-semibold uppercase tracking-widest text-[#9ca3af] mb-2 mt-5 first:mt-0">{children}</p>
 );
 
+const FONT_OPTIONS = [
+  { label: 'Inter',              value: 'Inter, system-ui, sans-serif',              fontFamily: 'Inter, system-ui, sans-serif',              description: 'Clean & modern (default)' },
+  { label: 'DM Sans',            value: "'DM Sans', system-ui, sans-serif",           fontFamily: "'DM Sans', system-ui, sans-serif",           description: 'Geometric, friendly' },
+  { label: 'Nunito',             value: "'Nunito', system-ui, sans-serif",            fontFamily: "'Nunito', system-ui, sans-serif",            description: 'Rounded & approachable' },
+  { label: 'Poppins',            value: "'Poppins', system-ui, sans-serif",           fontFamily: "'Poppins', system-ui, sans-serif",           description: 'Bold & stylish' },
+  { label: 'Lato',               value: "'Lato', system-ui, sans-serif",              fontFamily: "'Lato', system-ui, sans-serif",              description: 'Humanist, warm' },
+  { label: 'Open Sans',          value: "'Open Sans', system-ui, sans-serif",         fontFamily: "'Open Sans', system-ui, sans-serif",         description: 'Neutral & legible' },
+  { label: 'Roboto',             value: "'Roboto', system-ui, sans-serif",            fontFamily: "'Roboto', system-ui, sans-serif",            description: 'Google standard' },
+  { label: 'Outfit',             value: "'Outfit', system-ui, sans-serif",            fontFamily: "'Outfit', system-ui, sans-serif",            description: 'Techy & clean' },
+  { label: 'Plus Jakarta Sans',  value: "'Plus Jakarta Sans', system-ui, sans-serif", fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", description: 'Contemporary' },
+  { label: 'System UI',          value: 'system-ui, -apple-system, sans-serif',       fontFamily: 'system-ui, -apple-system, sans-serif',       description: "OS default font" },
+];
+
+const THEME_OPTIONS = [
+  { label: 'Light', value: 'light', description: 'White background' },
+  { label: 'Dark',  value: 'dark',  description: 'Dark background' },
+];
+
 export default function SettingsForm() {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
@@ -50,6 +69,15 @@ export default function SettingsForm() {
       .then(setSettings)
       .catch(() => setError('Could not load settings.'))
       .finally(() => setLoading(false));
+    // Load Google Fonts for the font picker
+    const id = 'settings-gfonts';
+    if (!document.getElementById(id)) {
+      const families = FONT_OPTIONS.filter(f => !f.value.startsWith('system')).map(f => f.label.replace(/ /g, '+')).join('&family=');
+      const link = document.createElement('link');
+      link.id = id; link.rel = 'stylesheet';
+      link.href = `https://fonts.googleapis.com/css2?family=${families}&display=swap`;
+      document.head.appendChild(link);
+    }
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -199,23 +227,21 @@ export default function SettingsForm() {
       <SectionTitle>Theme &amp; Typography</SectionTitle>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <Label htmlFor="themePreference">Default Theme</Label>
-          <select
-            id="themePreference"
-            name="themePreference"
+          <Label>Default Theme</Label>
+          <CustomSelect
             value={settings.themePreference || 'light'}
-            onChange={handleChange}
-            title="Default Theme"
-            className="w-full border border-[#e5e7eb] rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151]"
-          >
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-            <option value="high-contrast">High Contrast</option>
-          </select>
+            onChange={v => setSettings((p: any) => ({ ...p, themePreference: v }))}
+            options={THEME_OPTIONS}
+          />
         </div>
         <div>
-          <Label htmlFor="fontFamily">Font Family</Label>
-          <Input id="fontFamily" name="fontFamily" value={settings.fontFamily || 'Inter, system-ui, sans-serif'} onChange={handleChange} />
+          <Label>Font Family</Label>
+          <CustomSelect
+            value={settings.fontFamily || 'Inter, system-ui, sans-serif'}
+            onChange={v => setSettings((p: any) => ({ ...p, fontFamily: v }))}
+            options={FONT_OPTIONS}
+            previewFont
+          />
         </div>
       </div>
 
