@@ -1,6 +1,7 @@
 // src/components/admin/UsersTable.tsx
 import { useState, useEffect } from 'react';
 import { RefreshCw, Key, Shield, Plus, X } from 'lucide-react';
+import CustomSelect from './CustomSelect';
 
 interface User {
   _id: string;
@@ -151,14 +152,11 @@ export default function UsersTable() {
                   <td className="px-3 py-2 text-sm font-medium text-[#111827]">{user.name}</td>
                   <td className="px-3 py-2 text-xs text-[#6b7280]">{user.email}</td>
                   <td className="px-3 py-2">
-                    <select
+                    <CustomSelect
                       value={user.role || 'viewer'}
-                      onChange={(e) => handleRoleChange(user._id, e.target.value)}
-                      title="User role"
-                      className={`text-[0.6rem] font-medium border rounded-md px-2 py-0.5 focus:outline-none focus:ring-1 focus:ring-[#374151] ${roleBadge[user.role] ?? ''}`}
-                    >
-                      {ROLES.map(r => <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>)}
-                    </select>
+                      onChange={(v) => handleRoleChange(user._id, v)}
+                      options={ROLES.map(r => ({ value: r, label: r.charAt(0).toUpperCase() + r.slice(1) }))}
+                    />
                   </td>
                   <td className="px-3 py-2">
                     <span className={`inline-flex px-2 py-0.5 rounded-full text-[0.6rem] font-medium border ${user.isActive ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
@@ -218,14 +216,11 @@ export default function UsersTable() {
               ))}
               <div>
                 <label className="block text-xs font-medium text-[#374151] mb-1">Role</label>
-                <select
+                <CustomSelect
                   value={inviteForm.role}
-                  onChange={(e) => setInviteForm({ ...inviteForm, role: e.target.value })}
-                  title="Role"
-                  className="w-full border border-[#e5e7eb] rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151]"
-                >
-                  {ROLES.map(r => <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>)}
-                </select>
+                  onChange={(v) => setInviteForm({ ...inviteForm, role: v })}
+                  options={ROLES.map(r => ({ value: r, label: r.charAt(0).toUpperCase() + r.slice(1) }))}
+                />
               </div>
               {inviteError && <p className="text-xs text-red-600">{inviteError}</p>}
               <div className="flex gap-2 pt-1">

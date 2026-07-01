@@ -1,6 +1,7 @@
 // src/components/admin/TenantsTable.tsx
 import { useState } from 'react';
 import { Plus, X, Search, Pencil, Trash2, RefreshCw } from 'lucide-react';
+import CustomSelect from './CustomSelect';
 
 interface Tenant {
   _id: string;
@@ -214,12 +215,12 @@ export default function TenantsTable() {
               </div>
               <div>
                 <Label>Status</Label>
-                <select value={form.status} onChange={e => setForm({ ...form, status: e.target.value as Tenant['status'] })} title="Status"
-                  className="w-full border border-[#e5e7eb] rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151]">
-                  <option value="active">Active</option>
-                  <option value="pending">Pending</option>
-                  <option value="expired">Expired</option>
-                </select>
+                <CustomSelect value={form.status as string} onChange={v => setForm({ ...form, status: v as Tenant['status'] })}
+                  options={[
+                    { value: 'active', label: 'Active' },
+                    { value: 'pending', label: 'Pending' },
+                    { value: 'expired', label: 'Expired' },
+                  ]} />
               </div>
               {error && <p className="text-xs text-red-600">{error}</p>}
               <div className="flex gap-2 pt-1">

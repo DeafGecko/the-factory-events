@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { Plus, Pencil, X, Check, Archive, PartyPopper, FileText, ShoppingCart, Package, CheckCircle, XCircle, LayoutGrid, RotateCcw } from 'lucide-react';
+import CustomSelect from './CustomSelect';
 
 interface Space {
   _id: string;
@@ -129,12 +130,15 @@ export default function SpacesManager() {
             <input type="text" placeholder="Name (e.g. Main Ballroom)" value={formData.name}
               onChange={e => setFormData({ ...formData, name: e.target.value })}
               className="h-8 border border-[#e5e7eb] rounded-md px-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151]" />
-            <select value={formData.type} onChange={e => setFormData({ ...formData, type: e.target.value as any })}
-              className="h-8 border border-[#e5e7eb] rounded-md px-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151] bg-white">
-              <option value="party">🎉 Party Room</option>
-              <option value="market">🛒 Farm Market Booth</option>
-              <option value="lease">📝 Lease / Rental</option>
-            </select>
+            <CustomSelect
+              value={formData.type}
+              onChange={v => setFormData({ ...formData, type: v as Space['type'] })}
+              options={[
+                { value: 'party', label: '🎉 Party Room' },
+                { value: 'market', label: '🛒 Farm Market Booth' },
+                { value: 'lease', label: '📝 Lease / Rental' },
+              ]}
+            />
             <input type="number" placeholder="Capacity" value={formData.capacity || ''}
               onChange={e => setFormData({ ...formData, capacity: parseInt(e.target.value) || 0 })}
               className="h-8 border border-[#e5e7eb] rounded-md px-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151]" />

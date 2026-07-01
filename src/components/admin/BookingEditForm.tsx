@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { CheckCircle, XCircle } from 'lucide-react';
+import CustomSelect from './CustomSelect';
 
 interface Booking {
       _id: string;
@@ -233,34 +234,30 @@ return (
                         <label htmlFor="bookingType" className="block text-sm font-medium text-[#111827]">
                               Booking Category
                         </label>
-                        <select
-                              id="bookingType"
-                              name="bookingType"
+                        <CustomSelect
                               value={formData.bookingType}
-                              onChange={handleChange}
-                              className="mt-1 w-full border border-[#e5e7eb] rounded-md px-4 py-2.5 ring-primary"
-                        >
-                              <option value="party">Party / Event</option>
-                              <option value="lease">Lease / Rental</option>
-                              <option value="market-booth">Farm Market Booth</option>
-                        </select>
+                              onChange={v => setFormData(p => ({ ...p, bookingType: v }))}
+                              options={[
+                                { value: 'party', label: 'Party / Event' },
+                                { value: 'lease', label: 'Lease / Rental' },
+                                { value: 'market-booth', label: 'Farm Market Booth' },
+                              ]}
+                        />
                   </div>
                   <div>
                         <label htmlFor="spaceType" className="block text-sm font-medium text-[#111827]">
                               Space Type
                   </label>
-                  <select
-                        id="spaceType"
-                        name="spaceType"
+                  <CustomSelect
                         value={formData.spaceType}
-                        onChange={handleChange}
-                        className="mt-1 w-full border border-[#e5e7eb] rounded-md px-4 py-2.5 ring-primary"
-                  >
-                        <option value="">Select type</option>
-                        <option value="party">Party Room</option>
-                        <option value="market">Farm Market Booth</option>
-                        <option value="lease">Lease / Rental</option>
-                  </select>
+                        onChange={v => setFormData(p => ({ ...p, spaceType: v }))}
+                        placeholder="Select type"
+                        options={[
+                          { value: 'party', label: 'Party Room' },
+                          { value: 'market', label: 'Farm Market Booth' },
+                          { value: 'lease', label: 'Lease / Rental' },
+                        ]}
+                  />
                   </div>
             </div>
 {/* Assigned Space – Dropdown from Spaces API */}
@@ -271,20 +268,12 @@ return (
                   {spacesLoading ? (
                         <div className="mt-1 text-sm text-[#6b7280]">Loading spaces...</div>
                   ) : (
-                  <select
-                        id="assignedSpace"
-                        name="assignedSpace"
+                  <CustomSelect
                         value={formData.assignedSpace || ''}
-                        onChange={handleChange}
-                        className="mt-1 w-full border border-[#e5e7eb] rounded-md px-4 py-2.5 ring-primary"
-                  >
-                        <option value="">— Select a space —</option>
-                        {spaces.map((s) => (
-                              <option key={s._id} value={s.code}>
-                                    {s.code} {s.name ? `· ${s.name}` : ''}
-                              </option>
-                        ))}
-                  </select>
+                        onChange={v => setFormData(p => ({ ...p, assignedSpace: v }))}
+                        placeholder="— Select a space —"
+                        options={spaces.map(s => ({ value: s.code, label: s.code + (s.name ? ` · ${s.name}` : '') }))}
+                  />
                   )}
             </div>
 
@@ -309,19 +298,17 @@ return (
                         <label htmlFor="eventType" className="block text-sm font-medium text-[#111827]">
                               Event Type
                         </label>
-                        <select
-                              id="eventType"
-                              name="eventType"
+                        <CustomSelect
                               value={formData.eventType}
-                              onChange={handleChange}
-                              className="mt-1 w-full border border-[#e5e7eb] rounded-md px-4 py-2.5 ring-primary"
-                        >
-                              <option value="wedding">Wedding</option>
-                              <option value="corporate">Corporate</option>
-                              <option value="birthday">Birthday</option>
-                              <option value="conference">Conference</option>
-                              <option value="other">Other</option>
-                        </select>
+                              onChange={v => setFormData(p => ({ ...p, eventType: v }))}
+                              options={[
+                                { value: 'wedding', label: 'Wedding' },
+                                { value: 'corporate', label: 'Corporate' },
+                                { value: 'birthday', label: 'Birthday' },
+                                { value: 'conference', label: 'Conference' },
+                                { value: 'other', label: 'Other' },
+                              ]}
+                        />
                   </div>
             </div>
 
@@ -388,17 +375,15 @@ return (
                   <label htmlFor="paymentStatus" className="block text-sm font-medium text-[#111827]">
                         Payment Status
                   </label>
-                  <select
-                        id="paymentStatus"
-                        name="paymentStatus"
+                  <CustomSelect
                         value={formData.paymentStatus}
-                        onChange={handleChange}
-                        className="mt-1 w-full border border-[#e5e7eb] rounded-md px-4 py-2.5 ring-primary"
-                  >
-                        <option value="unpaid">Unpaid</option>
-                        <option value="partial">Partial</option>
-                        <option value="paid">Paid</option>
-                  </select>
+                        onChange={v => setFormData(p => ({ ...p, paymentStatus: v }))}
+                        options={[
+                          { value: 'unpaid', label: 'Unpaid' },
+                          { value: 'partial', label: 'Partial' },
+                          { value: 'paid', label: 'Paid' },
+                        ]}
+                  />
             </div>
 
 {/* Notes */}

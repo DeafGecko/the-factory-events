@@ -1,6 +1,7 @@
 // src/components/admin/DataManagement.tsx
 import { useState } from 'react';
 import { Upload, Download, FileDown, AlertCircle, CheckCircle, Trash2, Database } from 'lucide-react';
+import CustomSelect from './CustomSelect';
 
 interface ImportStats {
   imported: number;
@@ -51,17 +52,8 @@ const CardTitle = ({ icon: Icon, children }: { icon: React.ElementType; children
   </div>
 );
 
-const Select = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
-  <select
-    value={value}
-    onChange={(e) => onChange(e.target.value)}
-    title="Entity type"
-    className="w-full h-8 border border-[#e5e7eb] rounded-md px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151] bg-white"
-  >
-    {ENTITY_TYPES.map((t) => (
-      <option key={t.value} value={t.value}>{t.label}</option>
-    ))}
-  </select>
+const EntitySelect = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
+  <CustomSelect value={value} onChange={onChange} options={ENTITY_TYPES} />
 );
 
 export default function DataManagement() {
@@ -166,7 +158,7 @@ export default function DataManagement() {
         <SectionCard>
           <CardTitle icon={Upload}>Import CSV</CardTitle>
           <form onSubmit={handleImport} className="space-y-3">
-            <Select value={importEntity} onChange={setImportEntity} />
+            <EntitySelect value={importEntity} onChange={setImportEntity} />
             <label className="flex items-center gap-2 cursor-pointer px-3 py-2 border border-dashed border-[#d1d5db] rounded-md hover:bg-[#f9fafb] transition text-sm text-[#6b7280]">
               <Upload className="w-3.5 h-3.5 shrink-0" />
               {file ? file.name : 'Choose CSV file'}
@@ -200,7 +192,7 @@ export default function DataManagement() {
         <SectionCard>
           <CardTitle icon={Download}>Export CSV</CardTitle>
           <div className="space-y-3">
-            <Select value={exportEntity} onChange={setExportEntity} />
+            <EntitySelect value={exportEntity} onChange={setExportEntity} />
             <button onClick={handleExport} disabled={exporting} className="w-full h-8 px-3 rounded-md btn-primary text-sm disabled:opacity-50 transition">
               {exporting ? 'Exporting…' : 'Export'}
             </button>
@@ -238,7 +230,7 @@ export default function DataManagement() {
         <CardTitle icon={Trash2}>Bulk Delete</CardTitle>
         <div className="flex items-center gap-3 flex-wrap">
           <div className="w-48">
-            <Select value={deleteEntity} onChange={(v) => { setDeleteEntity(v); setDeleteConfirm(false); }} />
+            <EntitySelect value={deleteEntity} onChange={(v) => { setDeleteEntity(v); setDeleteConfirm(false); }} />
           </div>
           {deleteConfirm ? (
             <div className="flex items-center gap-2">
