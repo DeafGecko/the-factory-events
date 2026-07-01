@@ -2,8 +2,8 @@
 // src/layouts/AdminLayout.astro
 // Complete Admin Layout – dynamic branding from Settings
 
-import '../styles/global.css';
-import { sanityClient } from '../lib/sanity';
+import "../styles/global.css";
+import { sanityClient } from "../lib/sanity";
 
 import {
   LayoutDashboard,
@@ -12,13 +12,24 @@ import {
   Settings,
   LogOut,
   BookOpen,
-  LayoutGrid,
   Users,
   Building2,
   Briefcase,
   QrCode,
+  Box,
+  Wrench,
+  BarChart,
   UserCog,
-} from 'lucide-react';
+  Users2,
+  ClipboardList,
+  FileText,
+  Bell,
+  ShieldCheck,
+  Map,
+  Tag,
+  MessageSquare,
+  PackageCheck,
+} from "lucide-react";
 
 export interface Props {
   title: string;
@@ -31,22 +42,22 @@ let settings;
 try {
   settings = await sanityClient.fetch(`*[_type == "settings"][0]`);
 } catch (error) {
-  console.error('❌ Failed to fetch settings:', error);
+  console.error("❌ Failed to fetch settings:", error);
   settings = null;
 }
 
 // ── Default settings values ──
 const defaults = {
-  primary: '#333333',      // Dark gray
-  secondary: '#555555',    // Medium gray
-  accent: '#999999',       // Light gray
-  background: '#F5F5F5',   // Very light gray (almost white)
-  text: '#111111',         // Near black
-  sidebar: '#222222',      // Dark gray (sidebar)
-  sidebarText: '#ffffff',  // White (sidebar text)
-  font: 'Inter, system-ui, -apple-system, sans-serif',
-  logo: '/logo.svg',
-  venueName: 'Venue Operations',
+  primary: "#333333", // Dark gray
+  secondary: "#555555", // Medium gray
+  accent: "#999999", // Light gray
+  background: "#F5F5F5", // Very light gray (almost white)
+  text: "#111111", // Near black
+  sidebar: "#222222", // Dark gray (sidebar)
+  sidebarText: "#ffffff", // White (sidebar text)
+  font: "Inter, system-ui, -apple-system, sans-serif",
+  logo: "/logo.svg",
+  venueName: "Venue Operations",
 };
 
 // ── Merge settings with defaults ──
@@ -68,31 +79,73 @@ const c = {
 const currentYear = new Date().getFullYear();
 
 // ── Navigation ──
-const navItems = [
-  { href: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { href: '/admin', icon: BookOpen, label: 'Bookings' },
-  { href: '/admin/calendar', icon: Calendar, label: 'Calendar' },
-  { href: '/admin/bills', icon: DollarSign, label: 'Bills' },
-  { href: '/admin/spaces', icon: LayoutGrid, label: 'Spaces' },
-  { href: '/admin/clients', icon: Users, label: 'Clients' },
-  { href: '/admin/vendors', icon: Briefcase, label: 'Vendors' },
-  { href: '/admin/qr-scans', icon: QrCode, label: 'QR Scans' },
-  { href: '/admin/tenants', icon: Building2, label: 'Tenants' },
+const navGroups = [
+  {
+    label: "Core",
+    items: [
+      { href: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+      { href: "/admin/calendar", icon: Calendar, label: "Calendar" },
+      { href: "/admin", icon: BookOpen, label: "Bookings" },
+      { href: "/admin/bills", icon: DollarSign, label: "Billing" },
+    ],
+  },
+  {
+    label: "Venue",
+    items: [
+      { href: "/admin/floor-plans", icon: Map, label: "Floor Plans" },
+      { href: "/admin/equipment", icon: Box, label: "Equipment" },
+      { href: "/admin/maintenance", icon: Wrench, label: "Maintenance" },
+      { href: "/admin/inventory", icon: PackageCheck, label: "Inventory" },
+    ],
+  },
+  {
+    label: "People",
+    items: [
+      { href: "/admin/clients", icon: Users, label: "Clients" },
+      { href: "/admin/vendors", icon: Briefcase, label: "Vendors" },
+      { href: "/admin/tenants", icon: Building2, label: "Tenants" },
+      { href: "/admin/staff", icon: Users2, label: "Staff" },
+    ],
+  },
+  {
+    label: "Work",
+    items: [
+      { href: "/admin/tasks", icon: ClipboardList, label: "Tasks" },
+      { href: "/admin/contracts", icon: FileText, label: "Contracts" },
+      { href: "/admin/messages", icon: MessageSquare, label: "Messages" },
+      { href: "/admin/security", icon: ShieldCheck, label: "Security" },
+      { href: "/admin/qr-codes", icon: QrCode, label: "QR Codes" },
+    ],
+  },
+  {
+    label: "Insights",
+    items: [
+      { href: "/admin/reports", icon: BarChart, label: "Reports" },
+      { href: "/admin/pricing", icon: Tag, label: "Pricing" },
+    ],
+  },
 ];
+
+// active group = whichever group contains the current page (default open)
+const activePath = Astro.url.pathname;
 ---
 
-<!DOCTYPE html>
-<html lang="en" class={settings?.themePreference === 'dark' ? 'dark' : ''}>
-<head>
-      <meta charset="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>{title} · {c.venueName}</title>
-      <link rel="preconnect" href="https://fonts.googleapis.com" />
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-      <link href="https://fonts.googleapis.com/css2?family=Inter:opsz@14..32&display=swap" rel="stylesheet" />
-      <link rel="stylesheet" href="/styles/global.css" />
+<!doctype html>
+<html lang="en" class={settings?.themePreference === "dark" ? "dark" : ""}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title} · {c.venueName}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:opsz@14..32&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles/global.css" />
 
-<Fragment set:html={`<style>
+    <Fragment
+      set:html={`<style>
     :root {
       --admin-primary: ${c.primary};
       --admin-secondary: ${c.secondary};
@@ -105,323 +158,656 @@ const navItems = [
       --admin-border: color-mix(in srgb, ${c.text} 12%, transparent);
       --admin-muted: color-mix(in srgb, ${c.text} 45%, transparent);
     }
-  </style>`} />
+  </style>`}
+    />
 
-<style is:global>
-    body {
-      font-family: var(--admin-font);
-      background: var(--admin-bg);
-      color: var(--admin-text);
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-
-    .sidebar {
-      background: var(--admin-sidebar) !important;
-      color: var(--admin-sidebar-text) !important;
-    }
-
-    .sidebar a {
-      color: color-mix(in srgb, var(--admin-sidebar-text) 70%, transparent);
-    }
-
-    .sidebar a:hover {
-      background: color-mix(in srgb, var(--admin-sidebar-text) 8%, transparent);
-      color: var(--admin-sidebar-text);
-    }
-
-    .sidebar a.active {
-      background: color-mix(in srgb, var(--admin-sidebar-text) 12%, transparent);
-      color: var(--admin-sidebar-text);
-      font-weight: 500;
-      border-left: 3px solid var(--admin-primary);
-    }
-
-    .sidebar-muted {
-      color: color-mix(in srgb, var(--admin-sidebar-text) 45%, transparent);
-    }
-
-    .sidebar-border-top {
-      border-top: 1px solid color-mix(in srgb, var(--admin-sidebar-text) 12%, transparent);
-    }
-
-    .logo {
-      width: 140px;
-      height: 40px;
-      background-size: contain;
-      background-repeat: no-repeat;
-      background-position: left center;
-    }
-
-    @media (prefers-contrast: high) {
-      :root {
-        --admin-bg: #ffffff;
-        --admin-text: #000000;
-        --admin-primary: #000000;
-      }
-    }
-
-    html.dark {
-      --admin-bg: #1c1c1e;
-      --admin-text: #e5e7eb;
-      --admin-accent: #374151;
-    }
-
-    .main-header {
-      border-bottom: 1px solid var(--admin-border);
-    }
-
-    .main-footer {
-      border-top: 1px solid var(--admin-border);
-      color: var(--admin-muted);
-    }
-
-    .admin-muted {
-      color: var(--admin-muted);
-    }
-
-    .admin-avatar {
-      background: var(--admin-primary);
-    }
-
-    .content-scroll {
-      flex: 1;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      padding-bottom: 1rem;
-      min-height: 0;
-    }
-
-    .content-inner {
-      flex: 1;
-    }
-
-    /* ── Mobile sidebar drawer ── */
-    .sidebar-backdrop {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.45);
-      z-index: 40;
-    }
-    .sidebar-backdrop.open { display: block; }
-
-    .mobile-topbar {
-      display: none;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.75rem 1rem;
-      background: var(--admin-sidebar);
-      color: #fff;
-      position: sticky;
-      top: 0;
-      z-index: 30;
-    }
-
-    .hamburger {
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 4px;
-      color: var(--admin-sidebar-text, #fff);
-      line-height: 0;
-    }
-
-    @media (max-width: 1023px) {
-      .mobile-topbar { display: flex; }
-
-      aside.sidebar {
-        position: fixed !important;
-        top: 0;
-        left: 0;
-        bottom: 0;
-        z-index: 50;
-        margin: 0 !important;
-        border-radius: 0 !important;
-        transform: translateX(-100%);
-        transition: transform 0.25s ease;
-        width: 18rem !important;
+    <style is:global>
+      body {
+        font-family: var(--admin-font);
+        background: var(--admin-bg);
+        color: var(--admin-text);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
       }
 
-      aside.sidebar.open {
-        transform: translateX(0);
+      .sidebar {
+        background: var(--admin-sidebar) !important;
+        color: var(--admin-sidebar-text) !important;
       }
 
-      .desktop-layout {
+      .sidebar a {
+        color: color-mix(in srgb, var(--admin-sidebar-text) 70%, transparent);
+      }
+
+      .sidebar a:hover {
+        background: color-mix(
+          in srgb,
+          var(--admin-sidebar-text) 8%,
+          transparent
+        );
+        color: var(--admin-sidebar-text);
+      }
+
+      .sidebar a.active {
+        background: color-mix(
+          in srgb,
+          var(--admin-sidebar-text) 12%,
+          transparent
+        );
+        color: var(--admin-sidebar-text);
+        font-weight: 500;
+        border-left: 3px solid var(--admin-primary);
+      }
+
+      .sidebar-muted {
+        color: color-mix(in srgb, var(--admin-sidebar-text) 45%, transparent);
+      }
+
+      .sidebar-border-top {
+        border-top: 1px solid
+          color-mix(in srgb, var(--admin-sidebar-text) 12%, transparent);
+      }
+
+      .logo {
+        width: 140px;
+        height: 40px;
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: left center;
+      }
+
+      @media (prefers-contrast: high) {
+        :root {
+          --admin-bg: #ffffff;
+          --admin-text: #000000;
+          --admin-primary: #000000;
+        }
+      }
+
+      html.dark {
+        --admin-bg: #1c1c1e;
+        --admin-text: #e5e7eb;
+        --admin-accent: #374151;
+      }
+
+      .main-header {
+        border-bottom: 1px solid var(--admin-border);
+      }
+
+      .main-footer {
+        border-top: 1px solid var(--admin-border);
+        color: var(--admin-muted);
+      }
+
+      .admin-muted {
+        color: var(--admin-muted);
+      }
+
+      .admin-avatar {
+        background: var(--admin-primary);
+      }
+
+      .content-scroll {
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
         flex-direction: column;
-        height: calc(100vh - 3rem);
+        padding-bottom: 1rem;
+        min-height: 0;
       }
-    }
 
-    @media (min-width: 1024px) {
-      .desktop-layout { flex-direction: row; }
-    }
+      .content-inner {
+        flex: 1;
+      }
 
-    .btn-primary {
-      background: var(--admin-primary) !important;
-      color: #fff !important;
-      transition: opacity 0.15s;
-    }
-    .btn-primary:hover {
-      opacity: 0.85;
-    }
+      /* ── Mobile sidebar drawer ── */
+      .sidebar-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 40;
+      }
+      .sidebar-backdrop.open {
+        display: block;
+      }
 
-    .ring-primary:focus {
-      outline: none;
-      box-shadow: 0 0 0 1px var(--admin-primary);
-    }
-  </style>
-</head>
-<body>
+      .mobile-topbar {
+        display: none;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem 1rem;
+        background: var(--admin-sidebar);
+        color: #fff;
+        position: sticky;
+        top: 0;
+        z-index: 30;
+      }
 
-  <!-- ===== MOBILE TOPBAR ===== -->
-  <div class="mobile-topbar">
-    <button class="hamburger" id="menu-open" aria-label="Open menu">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-        <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
-      </svg>
-    </button>
-    <span class="text-sm font-medium tracking-wider uppercase">{c.venueName}</span>
-    {c.avatar
-      ? <img src={c.avatar} alt="Admin" class="w-8 h-8 rounded-full object-cover" />
-      : <span class="w-8 h-8 rounded-full text-white flex items-center justify-center text-sm font-semibold admin-avatar">A</span>
-    }
-  </div>
+      .hamburger {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 4px;
+        color: var(--admin-sidebar-text, #fff);
+        line-height: 0;
+      }
 
-<!-- ===== BACKDROP ===== -->
-  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+      @media (max-width: 1023px) {
+        .mobile-topbar {
+          display: flex;
+        }
 
-  <div class="flex h-screen overflow-hidden desktop-layout">
+        aside.sidebar {
+          position: fixed !important;
+          top: 0;
+          left: 0;
+          bottom: 0;
+          z-index: 50;
+          margin: 0 !important;
+          border-radius: 0 !important;
+          transform: translateX(-100%);
+          transition: transform 0.25s ease;
+          width: 13rem !important;
+        }
 
-<!-- ===== SIDEBAR ===== -->
-    <aside class="sidebar w-60 shrink-0 m-4 rounded-lg flex flex-col overflow-hidden" style="display: flex !important;">
-      <header class="px-5 pt-5 pb-2 border-b border-white/10 shrink-0">
-        <div class="flex items-center justify-between mb-1">
-          <img src={c.logo} alt={c.venueName} class="h-9 w-auto max-w-30 object-contain" />
-          <button class="hamburger lg:hidden" id="menu-close" aria-label="Close menu">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-          </button>
-        </div>
-        <p class="text-xs mt-1 tracking-wider sidebar-muted">Admin Panel</p>
-      </header>
+        aside.sidebar.open {
+          transform: translateX(0);
+        }
 
-      <nav class="flex-1 p-3 overflow-y-auto" aria-label="Main navigation">
-        <ul class="space-y-0.5">
-          {navItems.map(({ href, icon: Icon, label }) => (
-            <li>
-              <a
-                href={href}
-                class:list={[
-                  'flex items-center gap-3 px-4 py-2.5 rounded-md text-sm transition',
-                  Astro.url.pathname === href ? 'active' : ''
-                ]}
-              >
-                <Icon className="w-5 h-5 shrink-0" aria-hidden="true" />
-                {label}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </nav>
+        .desktop-layout {
+          flex-direction: column;
+          height: calc(100vh - 3rem);
+        }
+      }
 
+      @media (min-width: 1024px) {
+        .desktop-layout {
+          flex-direction: row;
+        }
+      }
 
-      <footer class="p-4 sidebar-border-top shrink-0 space-y-1">
+      /* ── App Launcher ── */
+      .launcher-panel {
+        background: var(--admin-bg);
+        border-color: var(--admin-border);
+        color: var(--admin-text);
+      }
 
-<!-- Settings -->
-          <a
-          href="/admin/settings"
-          class:list={[
-            'flex items-center gap-3 px-4 py-2.5 rounded-md text-sm transition',
-            Astro.url.pathname === '/admin/settings' ? 'active' : ''
-          ]}
+      .launcher-tile {
+        color: var(--admin-text);
+      }
+      .launcher-tile:hover .launcher-icon {
+        background: color-mix(in srgb, var(--admin-primary) 12%, transparent);
+        color: var(--admin-primary);
+      }
+      .launcher-tile:hover {
+        background: color-mix(in srgb, var(--admin-text) 5%, transparent);
+      }
+
+      .launcher-icon {
+        background: color-mix(in srgb, var(--admin-text) 8%, transparent);
+        color: var(--admin-text);
+        transition:
+          background 0.15s,
+          color 0.15s;
+      }
+
+      .btn-primary {
+        background: var(--admin-primary) !important;
+        color: #fff !important;
+        transition: opacity 0.15s;
+      }
+      .btn-primary:hover {
+        opacity: 0.85;
+      }
+
+      .ring-primary:focus {
+        outline: none;
+        box-shadow: 0 0 0 1px var(--admin-primary);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ===== MOBILE TOPBAR ===== -->
+    <div class="mobile-topbar">
+      <button class="hamburger" id="menu-open" aria-label="Open menu">
+        <svg
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
         >
-          <Settings className="w-5 h-5 shrink-0" aria-hidden="true" />
-          Settings
-        </a>
-
-<!-- Login Management -->
-        <a
-          href="/admin/login-management"
-          class:list={[
-            'flex items-center gap-2 px-3 py-2 rounded-md text-xs text-white/70 hover:text-white hover:bg-white/10 transition',
-            Astro.url.pathname === '/admin/login-management' ? 'active' : ''
-          ]}
-        >
-          <UserCog className="w-4 h-4 shrink-0" aria-hidden="true" />
-          Login Management
-        </a>
-
-<!-- Logout -->
-        <a
-          href="/admin/logout"
-          class="flex items-center gap-3 px-4 py-2.5 rounded-md text-sm transition sidebar-muted"
-        >
-          <LogOut className="w-5 h-5 shrink-0" aria-hidden="true" />
-          Logout
-        </a>
-        <p class="text-xs text-left pt-2 ml-3.5 sidebar-border-top mt-2 sidebar-muted">
-          v1.0 · {currentYear}
-        </p>
-      </footer>
-    </aside>
-
-<!-- ===== MAIN CONTENT ===== -->
-    <main class="flex-1 flex flex-col p-6 overflow-hidden" id="main-content">
-      <header class="main-header shrink-0 pb-4 mb-6">
-        <div class="flex items-center justify-between">
-          <h1 class="text-2xl font-light tracking-wider uppercase">{title}</h1>
-          <div class="hidden lg:flex items-center gap-4">
-            <span class="flex items-center gap-2 text-sm">
-              {c.avatar
-                ? <img src={c.avatar} alt="Admin" class="w-8 h-8 rounded-full object-cover" />
-                : <span class="w-8 h-8 rounded-full text-white flex items-center justify-center text-sm font-semibold uppercase admin-avatar">A</span>
-              }
-              <span class="admin-muted">Admin</span>
-            </span>
-            <a href="/admin/logout" class="text-sm admin-muted hover:opacity-80 transition">Logout</a>
-          </div>
-        </div>
-      </header>
-
-      <div class="content-scroll">
-        <div class="content-inner">
-          <slot />
-        </div>
-
-<!-- ===== FOOTER ===== -->       
-        <footer class="main-footer shrink-0 pt-4 mt-6 text-xs flex flex-wrap justify-between gap-2">
-          <span>&copy; {currentYear} <a href="/" class="hover:opacity-80 transition">{c.venueName}</a></span>
-          <span>
-            Built with <a href="https://astro.build" target="_blank" class="hover:opacity-80 transition">Astro</a> ·
-            <a href="https://react.dev" target="_blank" class="hover:opacity-80 transition">React</a> ·
-            <a href="https://cloudflare.com" target="_blank" class="hover:opacity-80 transition">Cloudflare</a>
+          <line x1="3" y1="6" x2="21" y2="6"></line><line
+            x1="3"
+            y1="12"
+            x2="21"
+            y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+      <span class="text-sm font-medium tracking-wider uppercase"
+        >{c.venueName}</span
+      >
+      {
+        c.avatar ? (
+          <img
+            src={c.avatar}
+            alt="Admin"
+            class="w-8 h-8 rounded-full object-cover"
+          />
+        ) : (
+          <span class="w-8 h-8 rounded-full text-white flex items-center justify-center text-sm font-semibold admin-avatar">
+            A
           </span>
+        )
+      }
+    </div>
+
+    <!-- ===== BACKDROP ===== -->
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+    <div class="flex h-screen overflow-hidden desktop-layout">
+      <!-- ===== SIDEBAR ===== -->
+      <aside
+        class="sidebar w-52 shrink-0 m-4 rounded-lg flex flex-col overflow-hidden"
+        style="display: flex !important;"
+      >
+        <header class="px-5 pt-5 pb-2 border-b border-white/10 shrink-0">
+          <div class="flex items-center justify-between mb-1">
+            <img
+              src={c.logo}
+              alt={c.venueName}
+              class="h-9 w-auto max-w-30 object-contain"
+            />
+            <button
+              class="hamburger lg:hidden"
+              id="menu-close"
+              aria-label="Close menu"
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              >
+                <line x1="18" y1="6" x2="6" y2="18"></line><line
+                  x1="6"
+                  y1="6"
+                  x2="18"
+                  y2="18"></line>
+              </svg>
+            </button>
+          </div>
+        </header>
+
+        <nav class="flex-1 p-2 overflow-y-auto" aria-label="Main navigation">
+          {
+            navGroups.map(({ label: groupLabel, items }) => (
+              <details
+                class="nav-group mb-1"
+                open={
+                  items.some((i) => i.href === activePath) ||
+                  (!navGroups.some((g) => g.items.some((i) => i.href === activePath)) && groupLabel === "Core")
+                }
+              >
+                <summary class="nav-group-summary flex items-center justify-between px-2.5 py-1.5 rounded-md cursor-pointer select-none text-[0.6rem] font-semibold uppercase tracking-widest sidebar-muted transition list-none">
+                  {groupLabel}
+                  <svg
+                    class="nav-chevron w-3 h-3 shrink-0 transition-transform"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </summary>
+                <ul class="mt-0.5">
+                  {items.map(({ href, icon: Icon, label }) => (
+                    <li>
+                      <a
+                        href={href}
+                        class:list={[
+                          "flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[0.65rem] transition",
+                          activePath === href ? "active" : "",
+                        ]}
+                      >
+                        <Icon
+                          className="w-3.5 h-3.5 shrink-0"
+                          aria-hidden="true"
+                        />
+                        {label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            ))
+          }
+        </nav>
+
+        <footer class="p-4 sidebar-border-top shrink-0 space-y-1">
+          <!-- Login Management -->
+          <a
+            href="/admin/login-management"
+            class:list={[
+              "flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[0.65rem] text-white/70 hover:text-white hover:bg-white/10 transition",
+              Astro.url.pathname === "/admin/login-management" ? "active" : "",
+            ]}
+          >
+            <UserCog className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+            Login Management
+          </a>
+
+          <!-- Settings -->
+          <a
+            href="/admin/settings"
+            class:list={[
+              "flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[0.65rem] transition",
+              Astro.url.pathname === "/admin/settings" ? "active" : "",
+            ]}
+          >
+            <Settings className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+            Settings
+          </a>
+
+          <p
+            class="text-xs text-left pt-0.5 ml-3.5 sidebar-border-top mt-2 sidebar-muted"
+          >
+            v1.0 · {currentYear}
+          </p>
         </footer>
-      </div>
-    </main>
+      </aside>
 
-  </div>
-  <script>
-    const sidebar = document.querySelector('aside.sidebar');
-    const backdrop = document.getElementById('sidebar-backdrop');
-    const openBtn = document.getElementById('menu-open');
-    const closeBtn = document.getElementById('menu-close');
+      <!-- ===== MAIN CONTENT ===== -->
+      <main class="flex-1 flex flex-col p-6 overflow-hidden" id="main-content">
+        <header class="main-header shrink-0 pb-4 mb-6">
+          <div class="flex items-center justify-between">
+            <h1 class="text-2xl font-light tracking-wider uppercase">
+              {title}
+            </h1>
+            <div class="hidden lg:flex items-center gap-3">
+              <!-- ── App Launcher ── -->
+              <div class="relative" id="launcher-wrap">
+                <button
+                  id="launcher-btn"
+                  aria-label="App launcher"
+                  aria-expanded="false"
+                  aria-controls="launcher-panel"
+                  class="w-8 h-8 rounded-full flex items-center justify-center text-(--admin-muted) hover:bg-(--admin-border) transition"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <rect x="3" y="3" width="4" height="4" rx="1"></rect>
+                    <rect x="10" y="3" width="4" height="4" rx="1"></rect>
+                    <rect x="17" y="3" width="4" height="4" rx="1"></rect>
+                    <rect x="3" y="10" width="4" height="4" rx="1"></rect>
+                    <rect x="10" y="10" width="4" height="4" rx="1"></rect>
+                    <rect x="17" y="10" width="4" height="4" rx="1"></rect>
+                    <rect x="3" y="17" width="4" height="4" rx="1"></rect>
+                    <rect x="10" y="17" width="4" height="4" rx="1"></rect>
+                    <rect x="17" y="17" width="4" height="4" rx="1"></rect>
+                  </svg>
+                </button>
 
-    function openMenu() {
-      sidebar?.classList.add('open');
-      backdrop?.classList.add('open');
-    }
-    function closeMenu() {
-      sidebar?.classList.remove('open');
-      backdrop?.classList.remove('open');
-    }
+                <div
+                  id="launcher-panel"
+                  role="dialog"
+                  aria-label="App launcher"
+                  hidden
+                  class="launcher-panel absolute right-0 top-10 w-72 rounded-xl shadow-2xl border z-50 p-4 overflow-y-auto"
+                  style="max-height: 80vh;"
+                >
+                  <p
+                    class="text-[0.6rem] font-semibold uppercase tracking-widest admin-muted mb-3"
+                  >
+                    Jump to
+                  </p>
+                  <div class="grid grid-cols-3 gap-1">
+                    {
+                      navGroups
+                        .flatMap((g) => g.items)
+                        .map(({ href, icon: Icon, label }) => (
+                          <a
+                            href={href}
+                            class="launcher-tile flex flex-col items-center gap-1.5 p-2.5 rounded-lg text-center transition"
+                          >
+                            <span class="launcher-icon w-9 h-9 rounded-full flex items-center justify-center">
+                              <Icon className="w-4 h-4" aria-hidden="true" />
+                            </span>
+                            <span class="text-[0.6rem] leading-tight">
+                              {label}
+                            </span>
+                          </a>
+                        ))
+                    }
+                  </div>
+                </div>
+              </div>
 
-    openBtn?.addEventListener('click', openMenu);
-    closeBtn?.addEventListener('click', closeMenu);
-    backdrop?.addEventListener('click', closeMenu);
-  </script>
-</body>
+              <!-- Notifications -->
+              <a
+                href="/admin/notifications"
+                aria-label="Notifications"
+                class="w-8 h-8 rounded-full flex items-center justify-center text-(--admin-muted) hover:bg-(--admin-border) transition"
+              >
+                <Bell className="w-4 h-4" aria-hidden="true" />
+              </a>
+
+              <!-- Avatar + Name dropdown -->
+              <div class="relative" id="avatar-wrap">
+                <button
+                  id="avatar-btn"
+                  aria-label="Account menu"
+                  aria-expanded="false"
+                  aria-controls="avatar-panel"
+                  class="flex items-center gap-2 rounded-full hover:bg-(--admin-border) px-2 py-1 transition"
+                >
+                  {
+                    c.avatar ? (
+                      <img
+                        src={c.avatar}
+                        alt="Admin"
+                        class="w-7 h-7 rounded-full object-cover"
+                      />
+                    ) : (
+                      <span class="w-7 h-7 rounded-full text-white flex items-center justify-center text-xs font-semibold uppercase admin-avatar">
+                        A
+                      </span>
+                    )
+                  }
+                  <span class="text-sm font-medium">Admin</span>
+                  <svg class="w-3 h-3 admin-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </button>
+
+                <div
+                  id="avatar-panel"
+                  role="menu"
+                  aria-label="Account menu"
+                  hidden
+                  class="launcher-panel absolute right-0 top-11 w-56 rounded-xl shadow-2xl border z-50 overflow-hidden"
+                >
+                  <!-- Header -->
+                  <div class="px-4 py-3 border-b" style="border-color: var(--admin-border);">
+                    <p class="text-sm font-semibold">Admin</p>
+                    <p class="text-xs admin-muted mt-0.5">Administrator</p>
+                  </div>
+
+                  <!-- Actions -->
+                  <div class="py-1">
+                    <a href="/admin/settings" role="menuitem" class="flex items-center gap-2.5 px-4 py-2 text-sm hover:bg-(--admin-border) transition">
+                      <Settings className="w-3.5 h-3.5 admin-muted" aria-hidden="true" />
+                      Profile Settings
+                    </a>
+                    <a href="/admin/billing" role="menuitem" class="flex items-center gap-2.5 px-4 py-2 text-sm hover:bg-(--admin-border) transition">
+                      <DollarSign className="w-3.5 h-3.5 admin-muted" aria-hidden="true" />
+                      Billing
+                    </a>
+                    <a href="/admin/login-management" role="menuitem" class="flex items-center gap-2.5 px-4 py-2 text-sm hover:bg-(--admin-border) transition">
+                      <Users className="w-3.5 h-3.5 admin-muted" aria-hidden="true" />
+                      Team & Access
+                    </a>
+                  </div>
+
+                  <!-- Danger zone -->
+                  <div class="border-t py-1" style="border-color: var(--admin-border);">
+                    <a href="/admin/logout" role="menuitem" class="flex items-center gap-2.5 px-4 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition">
+                      <LogOut className="w-3.5 h-3.5" aria-hidden="true" />
+                      Logout
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div class="content-scroll">
+          <div class="content-inner">
+            <slot />
+          </div>
+
+          <!-- ===== FOOTER ===== -->
+          <footer
+            class="main-footer shrink-0 pt-4 mt-6 text-xs flex flex-wrap justify-between gap-2"
+          >
+            <span
+              >&copy; {currentYear}
+              <a href="/" class="hover:opacity-80 transition">{c.venueName}</a
+              ></span
+            >
+            <span>
+              Built with <a
+                href="https://astro.build"
+                target="_blank"
+                class="hover:opacity-80 transition">Astro</a
+              > ·
+              <a
+                href="https://react.dev"
+                target="_blank"
+                class="hover:opacity-80 transition">React</a
+              > ·
+              <a
+                href="https://cloudflare.com"
+                target="_blank"
+                class="hover:opacity-80 transition">Cloudflare</a
+              >
+            </span>
+          </footer>
+        </div>
+      </main>
+    </div>
+    <script>
+      const sidebar = document.querySelector("aside.sidebar");
+      const backdrop = document.getElementById("sidebar-backdrop");
+      const openBtn = document.getElementById("menu-open");
+      const closeBtn = document.getElementById("menu-close");
+
+      function openMenu() {
+        sidebar?.classList.add("open");
+        backdrop?.classList.add("open");
+      }
+      function closeMenu() {
+        sidebar?.classList.remove("open");
+        backdrop?.classList.remove("open");
+      }
+
+      openBtn?.addEventListener("click", openMenu);
+      closeBtn?.addEventListener("click", closeMenu);
+      backdrop?.addEventListener("click", closeMenu);
+
+      // ── Persist nav group open/close state across page loads ──
+      const navGroups = document.querySelectorAll<HTMLDetailsElement>("nav .nav-group");
+      const STORAGE_KEY = "nav-open-groups";
+
+      const saved = JSON.parse(sessionStorage.getItem(STORAGE_KEY) || "null");
+      if (saved) {
+        navGroups.forEach((details) => {
+          const label = details.querySelector("summary")?.textContent?.trim();
+          if (label && label in saved) details.open = saved[label];
+        });
+      }
+
+      navGroups.forEach((details) => {
+        details.addEventListener("toggle", () => {
+          const state: Record<string, boolean> = {};
+          navGroups.forEach((d) => {
+            const label = d.querySelector("summary")?.textContent?.trim();
+            if (label) state[label] = d.open;
+          });
+          sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        });
+      });
+
+
+      // ── App Launcher ──
+      const launcherBtn = document.getElementById("launcher-btn");
+      const launcherPanel = document.getElementById("launcher-panel");
+
+      launcherBtn?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const isOpen = !launcherPanel?.hidden;
+        launcherPanel && (launcherPanel.hidden = isOpen);
+        launcherBtn.setAttribute("aria-expanded", String(!isOpen));
+      });
+
+      document.addEventListener("click", (e) => {
+        if (
+          !document.getElementById("launcher-wrap")?.contains(e.target as Node)
+        ) {
+          if (launcherPanel) launcherPanel.hidden = true;
+          launcherBtn?.setAttribute("aria-expanded", "false");
+        }
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && !launcherPanel?.hidden) {
+          launcherPanel && (launcherPanel.hidden = true);
+          launcherBtn?.setAttribute("aria-expanded", "false");
+          launcherBtn?.focus();
+        }
+      });
+
+      // ── Avatar dropdown ──
+      const avatarBtn = document.getElementById("avatar-btn");
+      const avatarPanel = document.getElementById("avatar-panel");
+
+      avatarBtn?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const isOpen = !avatarPanel?.hidden;
+        avatarPanel && (avatarPanel.hidden = isOpen);
+        avatarBtn.setAttribute("aria-expanded", String(!isOpen));
+      });
+
+      document.addEventListener("click", (e) => {
+        if (!document.getElementById("avatar-wrap")?.contains(e.target as Node)) {
+          if (avatarPanel) avatarPanel.hidden = true;
+          avatarBtn?.setAttribute("aria-expanded", "false");
+        }
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && !avatarPanel?.hidden) {
+          avatarPanel && (avatarPanel.hidden = true);
+          avatarBtn?.setAttribute("aria-expanded", "false");
+          avatarBtn?.focus();
+        }
+      });
+    </script>
+  </body>
 </html>

@@ -1,0 +1,12 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { Bell } from 'lucide-react';
+---
+
+<AdminLayout title="Notifications">
+  <section class="flex flex-col items-center justify-center py-20">
+    <Bell className="w-12 h-12 text-gray-300 mb-4" client:load />
+    <h2 class="text-2xl font-light tracking-wide mb-2">Notifications</h2>
+    <p class="text-[#6b7280]">This feature is coming soon. Stay tuned!</p>
+  </section>
+</AdminLayout>
