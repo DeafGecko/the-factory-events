@@ -65,7 +65,7 @@ export default function CalendarGrid({ bookings }: Props) {
             switch (status) {
                   case 'paid': return 'bg-emerald-500';
                   case 'partial': return 'bg-amber-500';
-                  default: return 'bg-gray-400';
+                  default: return 'bg-red-500';
             }
       };
 
@@ -207,7 +207,7 @@ export default function CalendarGrid({ bookings }: Props) {
             Partial
             </span>
             <span className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-full bg-gray-400" />
+                  <span className="w-3 h-3 rounded-full bg-red-500" />
             Unpaid
             </span>
             <span className="flex items-center gap-1.5 ml-4">
@@ -295,7 +295,7 @@ export default function CalendarGrid({ bookings }: Props) {
                               ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                               : selectedBooking.paymentStatus === 'partial'
                               ? 'bg-amber-50 text-amber-700 border-amber-200'
-                              : 'bg-gray-50 text-gray-600 border-gray-200'
+                              : 'bg-red-50 text-red-700 border-red-200'
                         }`}>
                               {getStatusLabel(selectedBooking.paymentStatus)}
                   </span>
@@ -304,7 +304,7 @@ export default function CalendarGrid({ bookings }: Props) {
 
             <div className="mt-6 flex gap-3">
                   <a
-                        href={`/admin/edit/${selectedBooking._id}`}
+                        href={`/admin/edit/${selectedBooking._id}?from=calendar`}
                         className="flex-1 text-center px-4 py-2 rounded-md btn-primary transition text-sm"
                   >
                         Edit Booking

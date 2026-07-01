@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { createClient } from '@sanity/client';
+import { generateAccountNumber } from '../../lib/accountNumber';
 
 // TEMPORARY: Hardcode your Sanity credentials for testing
 const sanityClient = createClient({
@@ -16,9 +17,7 @@ export const POST: APIRoute = async ({ request }) => {
     const formData = await request.json();
     console.log('Received data:', formData);
 
-    const year = new Date().getFullYear();
-    const random = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
-    const accountNumber = `BK-${year}-${random}`;
+    const accountNumber = await generateAccountNumber();
 
     console.log('Creating booking with account:', accountNumber);
     const booking = await sanityClient.create({

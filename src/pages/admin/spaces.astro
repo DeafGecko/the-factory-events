@@ -1,16 +1,13 @@
 ---
 // src/pages/admin/spaces.astro
 import AdminLayout from '../../layouts/AdminLayout.astro';
-import SpaceManager from '../../components/admin/SpaceManager';
+import SpacesManager from '../../components/admin/SpacesManager';
 ---
 
-<AdminLayout title="Space Management">
-  <div class="mb-6 flex justify-between items-center flex-wrap gap-4">
-    <div>
-      <h2 class="text-xl font-light tracking-wide">Manage Spaces</h2>
-      <p class="text-sm text-[#8e8e93]">Add, edit, or delete rooms, booths, and lease spaces.</p>
-    </div>
+<AdminLayout title="Floor Plans">
+  <div class="mb-4">
+    <h2 class="text-xl font-light tracking-wide">Floor Plans</h2>
+    <p class="text-sm text-[#9ca3af]">Add, edit, or delete rooms, booths, and lease spaces.</p>
   </div>
-
-  <SpaceManager client:load />
+  <SpacesManager client:load />
 </AdminLayout>

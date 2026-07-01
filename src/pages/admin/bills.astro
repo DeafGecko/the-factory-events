@@ -35,42 +35,39 @@ const totalOutstanding = totalRevenue - totalPaid;
 ---
 
 <AdminLayout title="Bills & Payments">
-<!-- Summary Cards -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
-            <div class="card p-6 flex items-start gap-4">
-                  <div class="p-3 rounded-lg bg-[#f3f4f6] text-[#6b7280]">
-                        <DollarSign class="w-5 h-5" />
-                  </div>
-            <div>
-                  <p class="text-sm text-[#6b7280] uppercase tracking-wider">
-                  Total Revenue
-                  </p>
-                  
-                  <p class="text-2xl font-light">${totalRevenue.toFixed(2)}</p>
-            </div>
+  <!-- Summary Cards -->
+  <div class="flex gap-3 mb-5">
+
+    <div class="flex-1 min-w-0 bg-white rounded-xl border border-[#e5e7eb] shadow-sm p-3 flex items-center gap-2">
+      <div class="p-1.5 rounded-lg bg-[#f3f4f6] text-[#6b7280] shrink-0">
+        <DollarSign className="w-3.5 h-3.5" />
       </div>
-      <div class="card p-6 flex items-start gap-4">
-            <div class="p-3 rounded-lg bg-[#f3f4f6] text-[#6b7280]">
-                  <CheckCircle class="w-5 h-5" />
-            </div>
-      <div>
-        <p class="text-sm text-[#6b7280] uppercase tracking-wider">
-          Total Paid
-        </p>
-        <p class="text-2xl font-light">${totalPaid.toFixed(2)}</p>
+      <div class="min-w-0">
+        <p class="text-[0.55rem] font-semibold uppercase tracking-widest text-[#9ca3af] truncate">Total Revenue</p>
+        <p class="text-base font-light text-[#111827] truncate">${totalRevenue.toFixed(2)}</p>
       </div>
     </div>
-    <div class="card p-6 flex items-start gap-4">
-      <div class="p-3 rounded-lg bg-[#f3f4f6] text-[#6b7280]">
-        <AlertCircle class="w-5 h-5" />
+
+    <div class="flex-1 min-w-0 bg-white rounded-xl border border-[#e5e7eb] shadow-sm p-3 flex items-center gap-2">
+      <div class="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 shrink-0">
+        <CheckCircle className="w-3.5 h-3.5" />
       </div>
-      <div>
-        <p class="text-sm text-[#6b7280] uppercase tracking-wider">
-          Outstanding
-        </p>
-        <p class="text-2xl font-light">${totalOutstanding.toFixed(2)}</p>
+      <div class="min-w-0">
+        <p class="text-[0.55rem] font-semibold uppercase tracking-widest text-[#9ca3af] truncate">Total Paid</p>
+        <p class="text-base font-light text-emerald-600 truncate">${totalPaid.toFixed(2)}</p>
       </div>
     </div>
+
+    <div class="flex-1 min-w-0 bg-white rounded-xl border border-[#e5e7eb] shadow-sm p-3 flex items-center gap-2">
+      <div class="p-1.5 rounded-lg bg-red-50 text-red-500 shrink-0">
+        <AlertCircle className="w-3.5 h-3.5" />
+      </div>
+      <div class="min-w-0">
+        <p class="text-[0.55rem] font-semibold uppercase tracking-widest text-[#9ca3af] truncate">Outstanding</p>
+        <p class="text-base font-light text-red-600 truncate">${totalOutstanding.toFixed(2)}</p>
+      </div>
+    </div>
+
   </div>
 
   <!-- Bills Table -->

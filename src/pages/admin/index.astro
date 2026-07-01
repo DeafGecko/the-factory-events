@@ -31,18 +31,11 @@ const bookings = await sanityClient.fetch(`
 
 <AdminLayout title="Bookings">
   <section>
-    <header class="flex flex-wrap items-center justify-between gap-4 mb-6">
-      <div>
-        <h2 class="text-xl font-light tracking-wide">All Bookings</h2>
-        <p class="text-sm text-[#6b7280]">{bookings.length} total bookings</p>
-      </div>
-      <a href="/admin/request" class="btn-primary inline-block px-4 py-2 rounded-md text-sm">
-        + New Booking
-      </a>
+    <header class="mb-4">
+      <h2 class="text-xl font-light tracking-wide">All Bookings</h2>
+      <p class="text-sm text-[#6b7280]">{bookings.length} total bookings</p>
     </header>
 
-    <div class="rounded-xl border border-[#e5e7eb] bg-white overflow-hidden shadow-sm">
-      <BookingTable client:load initialBookings={bookings} />
-    </div>
+    <BookingTable client:load initialBookings={bookings} />
   </section>
 </AdminLayout>

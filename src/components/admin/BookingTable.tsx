@@ -1,6 +1,6 @@
 // src/components/admin/BookingTable.tsx
 import { useState, useMemo } from 'react';
-import { Search, Inbox, Trash2, Edit } from 'lucide-react';
+import { Search, Inbox, Trash2, Edit, X, Plus } from 'lucide-react';
 
 interface Booking {
   _id: string;
@@ -21,255 +21,376 @@ interface Booking {
   createdAt: string;
 }
 
-interface Props {
-  initialBookings: Booking[];
-}
+interface Props { initialBookings: Booking[]; }
+
+const statusStyle = (s: string) =>
+  s === 'paid'    ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+  s === 'partial' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                    'bg-red-50 text-red-700 border-red-200';
+
+const dotColor = (s: string) =>
+  s === 'paid'    ? 'bg-emerald-500' :
+  s === 'partial' ? 'bg-amber-500' :
+                    'bg-red-500';
+
+const statusLabel = (s: string) =>
+  s === 'paid' ? 'Paid' : s === 'partial' ? 'Partial' : 'Unpaid';
+
+const FILTERS = ['all', 'paid', 'partial', 'unpaid'] as const;
+
+const EMPTY_FORM = {
+  clientName: '', email: '', phone: '',
+  eventDate: '', eventType: 'other', bookingType: 'party',
+  assignedSpace: '', spaceType: '', guestCount: 1,
+  totalPrice: 0, amountPaid: 0, paymentStatus: 'unpaid', notes: '',
+};
+
+const Label = ({ children }: { children: React.ReactNode }) => (
+  <span className="block text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af] mb-0.5">{children}</span>
+);
+
+const Input = (props: React.InputHTMLAttributes<HTMLInputElement>) => (
+  <input {...props} className={`w-full border border-[#e5e7eb] rounded-md px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151] ${props.className || ''}`} />
+);
+
+const Select = ({ children, ...props }: React.SelectHTMLAttributes<HTMLSelectElement>) => (
+  <select {...props} className={`w-full border border-[#e5e7eb] rounded-md px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151] bg-white ${props.className || ''}`}>
+    {children}
+  </select>
+);
 
 export default function BookingTable({ initialBookings }: Props) {
   const [bookings, setBookings] = useState(initialBookings);
-  const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState('all');
-  const [loading, setLoading] = useState(false);
+  const [search, setSearch]     = useState('');
+  const [filter, setFilter]     = useState('all');
+  const [loading, setLoading]   = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-  const filteredBookings = useMemo(() => {
-    return bookings.filter((b) => {
-      const matchesSearch =
-        b.clientName.toLowerCase().includes(search.toLowerCase()) ||
-        b.accountNumber.toLowerCase().includes(search.toLowerCase()) ||
-        b.email.toLowerCase().includes(search.toLowerCase());
+  // Modal state
+  const [showModal, setShowModal] = useState(false);
+  const [formData, setFormData]   = useState({ ...EMPTY_FORM });
+  const [saving, setSaving]       = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
-      const matchesFilter = filter === 'all' || b.paymentStatus === filter;
-
-      return matchesSearch && matchesFilter;
-    });
-  }, [bookings, search, filter]);
+  const filtered = useMemo(() =>
+    bookings.filter((b) => {
+      const q = search.toLowerCase();
+      const matchSearch = b.clientName.toLowerCase().includes(q) ||
+        (b.accountNumber || '').toLowerCase().includes(q) ||
+        b.email.toLowerCase().includes(q);
+      const matchFilter = filter === 'all' || b.paymentStatus === filter ||
+        (filter === 'unpaid' && !b.paymentStatus);
+      return matchSearch && matchFilter;
+    }), [bookings, search, filter]);
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this booking? This action cannot be undone.')) return;
+    if (!confirm('Delete this booking? This cannot be undone.')) return;
     setLoading(true);
     try {
       const res = await fetch(`/api/admin/bookings/${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        setBookings(bookings.filter((b) => b._id !== id));
-        setSelectedIds(selectedIds.filter((sid) => sid !== id));
-      } else {
-        alert('Failed to delete booking.');
-      }
-    } catch (err) {
-      console.error(err);
-      alert('Error deleting booking.');
-    } finally {
-      setLoading(false);
-    }
+      if (res.ok) { setBookings(b => b.filter(x => x._id !== id)); setSelectedIds(s => s.filter(x => x !== id)); }
+      else alert('Failed to delete booking.');
+    } catch { alert('Error deleting booking.'); }
+    finally { setLoading(false); }
   };
 
   const handleBulkDelete = async () => {
-    if (selectedIds.length === 0) return;
-    if (!confirm(`Delete ${selectedIds.length} selected bookings?`)) return;
+    if (!selectedIds.length || !confirm(`Delete ${selectedIds.length} bookings?`)) return;
     setLoading(true);
     try {
-      await Promise.all(
-        selectedIds.map((id) =>
-          fetch(`/api/admin/bookings/${id}`, { method: 'DELETE' })
-        )
-      );
-      setBookings(bookings.filter((b) => !selectedIds.includes(b._id)));
+      await Promise.all(selectedIds.map(id => fetch(`/api/admin/bookings/${id}`, { method: 'DELETE' })));
+      setBookings(b => b.filter(x => !selectedIds.includes(x._id)));
       setSelectedIds([]);
-    } catch (err) {
-      console.error(err);
-      alert('Error deleting bookings.');
-    } finally {
-      setLoading(false);
+    } catch { alert('Error deleting bookings.'); }
+    finally { setLoading(false); }
+  };
+
+  const allSelected = selectedIds.length === filtered.length && filtered.length > 0;
+  const toggleAll   = () => setSelectedIds(allSelected ? [] : filtered.map(b => b._id));
+  const toggleOne   = (id: string) => setSelectedIds(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
+
+  const counts = {
+    paid:    bookings.filter(b => b.paymentStatus === 'paid').length,
+    partial: bookings.filter(b => b.paymentStatus === 'partial').length,
+    unpaid:  bookings.filter(b => b.paymentStatus !== 'paid' && b.paymentStatus !== 'partial').length,
+  };
+
+  const openModal = () => { setFormData({ ...EMPTY_FORM }); setFormError(null); setShowModal(true); };
+  const closeModal = () => { setShowModal(false); setFormError(null); };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
+    setFormData(p => ({ ...p, [name]: type === 'number' ? parseFloat(value) || 0 : value }));
+  };
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true); setFormError(null);
+    try {
+      const res = await fetch('/api/create-booking', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Failed to create booking');
+      // Reload page so new booking appears with its generated account number
+      window.location.reload();
+    } catch (err: any) {
+      setFormError(err.message);
+      setSaving(false);
     }
   };
 
-  const toggleSelectAll = () => {
-    if (selectedIds.length === filteredBookings.length) {
-      setSelectedIds([]);
-    } else {
-      setSelectedIds(filteredBookings.map((b) => b._id));
-    }
-  };
-
-  const toggleSelect = (id: string) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id]
-    );
-  };
-
-  const getStatusStyles = (status: string) => {
-    switch (status) {
-      case 'paid':    return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-      case 'partial': return 'bg-amber-50 text-amber-700 border-amber-200';
-      case 'unpaid':  return 'bg-red-50 text-red-700 border-red-200';
-      default:        return 'bg-gray-50 text-gray-600 border-gray-200';
-    }
-  };
-
-  const getDotColor = (status: string) => {
-    switch (status) {
-      case 'paid':    return 'bg-emerald-600';
-      case 'partial': return 'bg-amber-600';
-      case 'unpaid':  return 'bg-red-500';
-      default:        return 'bg-gray-400';
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'paid':    return 'Paid';
-      case 'partial': return 'Partial';
-      case 'unpaid':  return 'Unpaid';
-      default:        return status || 'Unknown';
-    }
-  };
+  const balance = (formData.totalPrice || 0) - (formData.amountPaid || 0);
 
   return (
-    <div className="bg-white rounded-xl border border-[#e5e7eb] shadow-sm overflow-hidden">
+    <>
+    <div className="bg-white border border-[#e5e7eb] rounded-xl shadow-sm overflow-hidden">
+
       {/* Toolbar */}
-      <div className="px-6 py-4 border-b border-[#e5e7eb] bg-[#f9fafb] flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-3 flex-1">
-          <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9ca3af] w-4 h-4" />
-            <input
-              type="text"
-              placeholder="Search by name, account, or email..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-[#e5e7eb] rounded-lg bg-white text-sm text-gray-900 placeholder:text-[#9ca3af] ring-primary transition"
-            />
-          </div>
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="border border-[#e5e7eb] rounded-lg px-4 py-2 bg-white text-sm text-gray-900 ring-primary"
-          >
-            <option value="all">All Status</option>
-            <option value="paid">Paid</option>
-            <option value="partial">Partial</option>
-            <option value="unpaid">Unpaid</option>
-          </select>
+      <div className="px-3 py-2 border-b border-[#e5e7eb] flex items-center gap-2">
+        <div className="relative flex-1 min-w-36">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9ca3af]" />
+          <input type="search" placeholder="Search name, account, email…" value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full h-8 pl-8 pr-3 border border-[#e5e7eb] rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#374151]" />
         </div>
-        {selectedIds.length > 0 && (
-          <button
-            onClick={handleBulkDelete}
-            disabled={loading}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition text-sm disabled:opacity-50"
-          >
-            <Trash2 className="w-4 h-4" />
-            Delete {selectedIds.length} selected
+
+        {/* Filter pills */}
+        <div className="flex items-center gap-1">
+          {FILTERS.map(f => (
+            <button key={f} type="button" onClick={() => setFilter(f)}
+              className={`h-8 px-4 rounded-md text-xs font-medium transition capitalize ${filter === f ? 'btn-primary' : 'border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f3f4f6]'}`}>
+              {f === 'all' ? `All (${bookings.length})` :
+               f === 'paid' ? `Paid (${counts.paid})` :
+               f === 'partial' ? `Partial (${counts.partial})` :
+               `Unpaid (${counts.unpaid})`}
+            </button>
+          ))}
+        </div>
+
+        {selectedIds.length > 0 ? (
+          <button type="button" onClick={handleBulkDelete} disabled={loading}
+            className="h-8 flex items-center gap-1 px-4 rounded-md bg-red-600 text-white text-xs hover:bg-red-700 disabled:opacity-50 transition">
+            <Trash2 className="w-3.5 h-3.5" /> Delete {selectedIds.length}
+          </button>
+        ) : (
+          <button type="button" onClick={openModal}
+            className="h-8 flex items-center gap-1 px-4 rounded-md btn-primary text-xs transition">
+            <Plus className="w-3.5 h-3.5" /> New Booking
           </button>
         )}
       </div>
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full">
           <thead>
-            <tr className="border-b border-[#e5e7eb] bg-[#f3f4f6]">
-              <th className="py-3.5 px-3 w-8">
-                <input
-                  type="checkbox"
-                  checked={selectedIds.length === filteredBookings.length && filteredBookings.length > 0}
-                  onChange={toggleSelectAll}
-                  className="rounded border-[#d1d5db] accent-[var(--admin-primary)]"
-                />
+            <tr className="bg-[#f9fafb] border-b border-[#e5e7eb]">
+              <th className="px-3 py-2 w-8">
+                <input type="checkbox" title="Select all" checked={allSelected} onChange={toggleAll}
+                  className="rounded border-[#d1d5db]" />
               </th>
-              <th className="text-left py-3.5 px-3 font-semibold text-[#6b7280] text-[10px] uppercase tracking-[0.8px]">Account</th>
-              <th className="text-left py-3.5 px-3 font-semibold text-[#6b7280] text-[10px] uppercase tracking-[0.8px]">Client</th>
-              <th className="text-left py-3.5 px-3 font-semibold text-[#6b7280] text-[10px] uppercase tracking-[0.8px] hidden md:table-cell">Email</th>
-              <th className="text-left py-3.5 px-3 font-semibold text-[#6b7280] text-[10px] uppercase tracking-[0.8px] hidden lg:table-cell">Date</th>
-              <th className="text-left py-3.5 px-3 font-semibold text-[#6b7280] text-[10px] uppercase tracking-[0.8px] hidden sm:table-cell">Guests</th>
-              <th className="text-left py-3.5 px-3 font-semibold text-[#6b7280] text-[10px] uppercase tracking-[0.8px] hidden md:table-cell">Total</th>
-              <th className="text-left py-3.5 px-3 font-semibold text-[#6b7280] text-[10px] uppercase tracking-[0.8px]">Status</th>
-              <th className="text-left py-3.5 px-3 font-semibold text-[#6b7280] text-[10px] uppercase tracking-[0.8px]">Actions</th>
+              {['Account', 'Client', 'Email', 'Date', 'Guests', 'Total', 'Status', 'Actions'].map(h => (
+                <th key={h} className={`text-left px-3 py-2 text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]
+                  ${h === 'Email'  ? 'hidden md:table-cell' : ''}
+                  ${h === 'Date'   ? 'hidden lg:table-cell' : ''}
+                  ${h === 'Guests' ? 'hidden sm:table-cell' : ''}
+                  ${h === 'Total'  ? 'hidden md:table-cell' : ''}`}>{h}</th>
+              ))}
             </tr>
           </thead>
-          <tbody>
-            {filteredBookings.length === 0 ? (
+          <tbody className="divide-y divide-[#f3f4f6]">
+            {filtered.length === 0 ? (
               <tr>
                 <td colSpan={9} className="py-12 text-center text-[#9ca3af]">
-                  <Inbox className="w-12 h-12 mx-auto mb-3 text-[#9ca3af]" />
-                  <p className="text-sm">No bookings found.</p>
+                  <Inbox className="w-10 h-10 mx-auto mb-2 text-[#e5e7eb]" />
+                  <p className="text-xs">No bookings found.</p>
                 </td>
               </tr>
-            ) : (
-              filteredBookings.map((b) => (
-                <tr key={b._id} className="border-b border-[#f3f4f6] hover:bg-[#f9fafb] transition">
-                  <td className="py-3 px-3">
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.includes(b._id)}
-                      onChange={() => toggleSelect(b._id)}
-                      className="rounded border-[#d1d5db] accent-[var(--admin-primary)]"
-                    />
-                  </td>
-                  <td className="py-3 px-3 font-mono text-xs text-[#111827]">{b.accountNumber}</td>
-                  <td className="py-3 px-3 font-medium text-[#111827]">{b.clientName}</td>
-                  <td className="py-3 px-3 text-[#6b7280] hidden md:table-cell">{b.email}</td>
-                  <td className="py-3 px-3 text-[#6b7280] hidden lg:table-cell">
-                    {new Date(b.eventDate).toLocaleDateString('en-US', {
-                      month: 'short', day: 'numeric', year: 'numeric',
-                    })}
-                  </td>
-                  <td className="py-3 px-3 text-[#6b7280] hidden sm:table-cell">{b.guestCount}</td>
-                  <td className="py-3 px-3 font-medium text-[#111827] hidden md:table-cell">
-                    ${(b.totalPrice || 0).toFixed(2)}
-                  </td>
-                  <td className="py-3 px-3">
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${getStatusStyles(b.paymentStatus)}`}>
-                      <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${getDotColor(b.paymentStatus)}`} />
-                      {getStatusLabel(b.paymentStatus)}
-                    </span>
-                  </td>
-                  <td className="py-3 px-3">
-                    <div className="flex items-center gap-1">
-                      <a
-                        href={`/admin/edit/${b._id}`}
-                        className="flex items-center gap-1 px-3 py-1.5 text-[#6b7280] hover:text-[#111827] hover:bg-[#f3f4f6] rounded-md transition text-xs font-medium"
-                      >
-                        <Edit className="w-3.5 h-3.5" />
-                        Edit
-                      </a>
-                      <button
-                        onClick={() => handleDelete(b._id)}
-                        disabled={loading}
-                        className="flex items-center gap-1 px-3 py-1.5 text-[#9ca3af] hover:text-red-600 hover:bg-red-50 rounded-md transition text-xs font-medium disabled:opacity-50"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        Delete
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
+            ) : filtered.map(b => (
+              <tr key={b._id} className="hover:bg-[#fafafa] transition">
+                <td className="px-3 py-2">
+                  <input type="checkbox" title={`Select ${b.clientName}`} checked={selectedIds.includes(b._id)} onChange={() => toggleOne(b._id)}
+                    className="rounded border-[#d1d5db]" />
+                </td>
+                <td className="px-3 py-2 font-mono text-xs text-[#6b7280]">{b.accountNumber}</td>
+                <td className="px-3 py-2">
+                  <p className="text-sm font-medium text-[#111827] leading-tight">{b.clientName}</p>
+                  <p className="text-[0.65rem] text-[#9ca3af] md:hidden">{b.email}</p>
+                </td>
+                <td className="px-3 py-2 text-sm text-[#6b7280] hidden md:table-cell">{b.email}</td>
+                <td className="px-3 py-2 text-xs text-[#6b7280] hidden lg:table-cell">
+                  {new Date(b.eventDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                </td>
+                <td className="px-3 py-2 text-xs text-[#6b7280] hidden sm:table-cell">{b.guestCount}</td>
+                <td className="px-3 py-2 text-xs font-medium text-[#111827] hidden md:table-cell">${(b.totalPrice || 0).toFixed(2)}</td>
+                <td className="px-3 py-2">
+                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.6rem] font-medium border ${statusStyle(b.paymentStatus)}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${dotColor(b.paymentStatus)}`} />
+                    {statusLabel(b.paymentStatus)}
+                  </span>
+                </td>
+                <td className="px-3 py-2">
+                  <div className="flex items-center gap-1">
+                    <a href={`/admin/edit/${b._id}`} title={`Edit ${b.clientName}`}
+                      className="p-1.5 rounded-md text-[#9ca3af] hover:text-[#374151] hover:bg-[#f3f4f6] transition">
+                      <Edit className="w-3.5 h-3.5" />
+                    </a>
+                    <button type="button" title={`Delete ${b.clientName}`} onClick={() => handleDelete(b._id)} disabled={loading}
+                      className="p-1.5 rounded-md text-[#9ca3af] hover:text-red-600 hover:bg-red-50 transition disabled:opacity-50">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
 
       {/* Footer */}
-      <div className="px-6 py-3 border-t border-[#e5e7eb] bg-[#f9fafb] flex flex-wrap items-center justify-between gap-3">
-        <span className="text-sm text-[#6b7280]">
-          Showing <strong className="text-[#111827]">{filteredBookings.length}</strong> of{' '}
-          <strong className="text-[#111827]">{bookings.length}</strong> bookings
-        </span>
-        <div className="flex flex-wrap items-center gap-4 text-sm text-[#6b7280]">
-          <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-            Paid: {bookings.filter((b) => b.paymentStatus === 'paid').length}
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-            Partial: {bookings.filter((b) => b.paymentStatus === 'partial').length}
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-gray-400" />
-            Unpaid: {bookings.filter((b) => b.paymentStatus !== 'paid' && b.paymentStatus !== 'partial').length}
-          </span>
+      <div className="px-4 py-2 border-t border-[#e5e7eb] flex items-center justify-between gap-3 text-xs text-[#9ca3af]">
+        <span>Showing <strong className="text-[#374151]">{filtered.length}</strong> of <strong className="text-[#374151]">{bookings.length}</strong></span>
+        <div className="flex items-center gap-3">
+          {([['bg-emerald-500', 'Paid', counts.paid], ['bg-amber-500', 'Partial', counts.partial], ['bg-red-500', 'Unpaid', counts.unpaid]] as const).map(([color, label, count]) => (
+            <span key={label} className="flex items-center gap-1">
+              <span className={`w-2 h-2 rounded-full ${color}`} />
+              {label}: <strong className="text-[#374151]">{count}</strong>
+            </span>
+          ))}
         </div>
       </div>
     </div>
+
+    {/* ── New Booking Modal ── */}
+    {showModal && (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={closeModal}>
+        <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+
+          {/* Modal header */}
+          <div className="flex items-center justify-between px-4 py-3 border-b border-[#e5e7eb]">
+            <h3 className="text-sm font-semibold text-[#111827]">New Booking</h3>
+            <button type="button" onClick={closeModal} title="Close" className="p-1 rounded-md text-[#9ca3af] hover:text-[#374151] hover:bg-[#f3f4f6] transition">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          <form onSubmit={handleCreate} className="px-4 py-3 space-y-3">
+            {formError && (
+              <div className="px-3 py-2 rounded-md bg-red-50 border border-red-200 text-red-700 text-xs">{formError}</div>
+            )}
+
+            {/* Client Info */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Client Name *</Label>
+                <Input name="clientName" value={formData.clientName} onChange={handleChange} required placeholder="Jane Smith" />
+              </div>
+              <div>
+                <Label>Email *</Label>
+                <Input type="email" name="email" value={formData.email} onChange={handleChange} required placeholder="jane@email.com" />
+              </div>
+            </div>
+
+            <div>
+              <Label>Phone</Label>
+              <Input type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="(555) 000-0000" />
+            </div>
+
+            {/* Event Info */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Event Date & Time *</Label>
+                <Input type="datetime-local" name="eventDate" value={formData.eventDate} onChange={handleChange} required />
+              </div>
+              <div>
+                <Label>Guests *</Label>
+                <Input type="number" name="guestCount" value={formData.guestCount} onChange={handleChange} min="1" required />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Booking Type</Label>
+                <Select name="bookingType" value={formData.bookingType} onChange={handleChange}>
+                  <option value="party">Party / Event</option>
+                  <option value="lease">Lease / Rental</option>
+                  <option value="market-booth">Farm Market Booth</option>
+                </Select>
+              </div>
+              <div>
+                <Label>Event Type</Label>
+                <Select name="eventType" value={formData.eventType} onChange={handleChange}>
+                  <option value="wedding">Wedding</option>
+                  <option value="corporate">Corporate</option>
+                  <option value="birthday">Birthday</option>
+                  <option value="party">Party</option>
+                  <option value="graduation">Graduation</option>
+                  <option value="shower">Baby/Bridal Shower</option>
+                  <option value="concert">Concert / Show</option>
+                  <option value="holiday">Holiday Event</option>
+                  <option value="farm-market">Farm Market</option>
+                  <option value="tenant">Tenant</option>
+                  <option value="venue-rental">Venue Rental</option>
+                  <option value="other">Other</option>
+                </Select>
+              </div>
+            </div>
+
+            <div>
+              <Label>Assigned Space</Label>
+              <Input name="assignedSpace" value={formData.assignedSpace} onChange={handleChange} placeholder="e.g. A1, B3" />
+            </div>
+
+            {/* Financial */}
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <Label>Total Price ($)</Label>
+                <Input type="number" name="totalPrice" value={formData.totalPrice} onChange={handleChange} min="0" step="0.01" />
+              </div>
+              <div>
+                <Label>Amount Paid ($)</Label>
+                <Input type="number" name="amountPaid" value={formData.amountPaid} onChange={handleChange} min="0" step="0.01" />
+              </div>
+              <div>
+                <Label>Balance</Label>
+                <p className={`pt-1.5 text-sm font-semibold ${balance > 0 ? 'text-red-600' : 'text-emerald-600'}`}>${balance.toFixed(2)}</p>
+              </div>
+            </div>
+
+            <div>
+              <Label>Payment Status</Label>
+              <Select name="paymentStatus" value={formData.paymentStatus} onChange={handleChange}>
+                <option value="unpaid">Unpaid</option>
+                <option value="partial">Partial</option>
+                <option value="paid">Paid</option>
+              </Select>
+            </div>
+
+            <div>
+              <Label>Notes</Label>
+              <textarea name="notes" value={formData.notes} onChange={handleChange} rows={2}
+                placeholder="Internal notes…"
+                className="w-full border border-[#e5e7eb] rounded-md px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151] resize-none" />
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-2 pt-1 border-t border-[#e5e7eb]">
+              <button type="submit" disabled={saving}
+                className="flex-1 py-2 rounded-md btn-primary text-sm disabled:opacity-50 transition">
+                {saving ? 'Creating…' : 'Create Booking'}
+              </button>
+              <button type="button" onClick={closeModal}
+                className="px-4 py-2 rounded-md border border-[#e5e7eb] text-sm text-[#6b7280] hover:bg-[#f3f4f6] transition">
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    )}
+    </>
   );
 }

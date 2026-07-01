@@ -5,6 +5,7 @@ export const client = defineType({
   type: 'document',
   title: 'Client',
   fields: [
+    defineField({ name: 'accountNumber', type: 'string', title: 'Account Number', readOnly: true }),
     defineField({ name: 'name', type: 'string', title: 'Full Name' }),
     defineField({ name: 'email', type: 'string', title: 'Email' }),
     defineField({ name: 'phone', type: 'string', title: 'Phone' }),

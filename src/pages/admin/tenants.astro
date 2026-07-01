@@ -1,12 +1,12 @@
 ---
 import AdminLayout from '../../layouts/AdminLayout.astro';
-import { Building2 } from 'lucide-react';
+import TenantsTable from '../../components/admin/TenantsTable';
 ---
 
 <AdminLayout title="Tenants">
-      <section class="flex flex-col items-center justify-center py-20">
-            <Building2 className="w-12 h-12 text-gray-300 mb-4" client:load />
-            <h2 class="text-2xl font-light tracking-wide mb-2">Tenant Management</h2>
-            <p class="text-[#6b7280]">This feature is coming soon. Stay tuned!</p>
-      </section>
+  <div class="mb-5">
+    <h2 class="text-xl font-light tracking-wide">Tenants</h2>
+    <p class="text-sm text-[#8e8e93]">Manage long-term tenants, lease info, and monthly rent.</p>
+  </div>
+  <TenantsTable client:load />
 </AdminLayout>

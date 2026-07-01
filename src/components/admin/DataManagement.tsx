@@ -56,7 +56,7 @@ const Select = ({ value, onChange }: { value: string; onChange: (v: string) => v
     value={value}
     onChange={(e) => onChange(e.target.value)}
     title="Entity type"
-    className="w-full border border-[#e5e7eb] rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151]"
+    className="w-full h-8 border border-[#e5e7eb] rounded-md px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151] bg-white"
   >
     {ENTITY_TYPES.map((t) => (
       <option key={t.value} value={t.value}>{t.label}</option>
@@ -173,7 +173,7 @@ export default function DataManagement() {
               <input type="file" accept=".csv" className="hidden" onChange={(e) => { setFile(e.target.files?.[0] ?? null); setImportStats(null); setImportError(null); }} />
             </label>
             {file && <p className="text-xs text-[#6b7280]">{(file.size / 1024).toFixed(1)} KB</p>}
-            <button type="submit" disabled={!file || importing} className="w-full px-3 py-1.5 rounded-md btn-primary text-sm disabled:opacity-50 transition">
+            <button type="submit" disabled={!file || importing} className="w-full h-8 px-3 rounded-md btn-primary text-sm disabled:opacity-50 transition">
               {importing ? 'Importing…' : 'Import'}
             </button>
           </form>
@@ -201,7 +201,7 @@ export default function DataManagement() {
           <CardTitle icon={Download}>Export CSV</CardTitle>
           <div className="space-y-3">
             <Select value={exportEntity} onChange={setExportEntity} />
-            <button onClick={handleExport} disabled={exporting} className="w-full px-3 py-1.5 rounded-md btn-primary text-sm disabled:opacity-50 transition">
+            <button onClick={handleExport} disabled={exporting} className="w-full h-8 px-3 rounded-md btn-primary text-sm disabled:opacity-50 transition">
               {exporting ? 'Exporting…' : 'Export'}
             </button>
             {exportError && (
@@ -215,16 +215,17 @@ export default function DataManagement() {
         {/* ── Templates ── */}
         <SectionCard>
           <CardTitle icon={FileDown}>Templates</CardTitle>
-          <p className="text-xs text-[#6b7280] mb-3">Download a pre-formatted CSV template for each entity type.</p>
-          <ul className="space-y-1">
+          <p className="text-[0.65rem] text-[#9ca3af] mb-2">Download a pre-formatted CSV template.</p>
+          <ul className="space-y-0.5 max-h-48 overflow-y-auto pr-0.5">
             {ENTITY_TYPES.map((t) => (
               <li key={t.value}>
                 <button
+                  type="button"
                   onClick={() => downloadTemplate(t.value)}
-                  className="w-full text-left flex items-center justify-between px-3 py-1.5 rounded-md text-sm hover:bg-[#f3f4f6] transition"
+                  className="w-full text-left flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs text-[#374151] hover:bg-[#f3f4f6] transition"
                 >
                   <span>{t.label}</span>
-                  <FileDown className="w-3.5 h-3.5 text-[#9ca3af]" />
+                  <FileDown className="w-3 h-3 text-[#9ca3af]" />
                 </button>
               </li>
             ))}
@@ -242,13 +243,13 @@ export default function DataManagement() {
           {deleteConfirm ? (
             <div className="flex items-center gap-2">
               <span className="text-xs text-red-600 font-medium">Delete all {deleteEntity}? This cannot be undone.</span>
-              <button onClick={handleBulkDelete} disabled={deleting} className="px-3 py-1.5 rounded-md bg-red-600 text-white text-xs hover:bg-red-700 disabled:opacity-50 transition">
+              <button onClick={handleBulkDelete} disabled={deleting} className="h-8 px-3 rounded-md bg-red-600 text-white text-xs hover:bg-red-700 disabled:opacity-50 transition">
                 {deleting ? 'Deleting…' : 'Confirm Delete'}
               </button>
-              <button onClick={() => setDeleteConfirm(false)} className="px-3 py-1.5 rounded-md border border-[#e5e7eb] text-xs hover:bg-[#f3f4f6] transition">Cancel</button>
+              <button onClick={() => setDeleteConfirm(false)} className="h-8 px-3 rounded-md border border-[#e5e7eb] text-xs hover:bg-[#f3f4f6] transition">Cancel</button>
             </div>
           ) : (
-            <button onClick={handleBulkDelete} className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-red-200 text-red-600 text-sm hover:bg-red-50 transition">
+            <button onClick={handleBulkDelete} className="h-8 flex items-center gap-1.5 px-3 rounded-md border border-red-200 text-red-600 text-sm hover:bg-red-50 transition">
               <Trash2 className="w-3.5 h-3.5" /> Bulk Delete
             </button>
           )}

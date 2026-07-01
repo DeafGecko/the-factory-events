@@ -109,7 +109,7 @@ export default function SettingsForm() {
   ];
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-1 max-w-3xl">
+    <form onSubmit={handleSubmit} className="space-y-1">
 
       {success && (
         <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-800 px-3 py-2 rounded-md text-xs mb-3">

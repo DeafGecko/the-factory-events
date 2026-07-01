@@ -1,0 +1,170 @@
+---
+// Public RSVP page — guests scan QR and register here
+const { token } = Astro.params;
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Event RSVP</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: #f3f4f6; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+    .card { background: white; border-radius: 1rem; box-shadow: 0 4px 24px rgba(0,0,0,0.08); max-width: 420px; width: 100%; overflow: hidden; }
+    .header { background: #1f2937; color: white; padding: 1.5rem; text-align: center; }
+    .header h1 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.25rem; }
+    .header p { font-size: 0.8rem; color: #9ca3af; }
+    .event-info { padding: 1rem 1.5rem; background: #f9fafb; border-bottom: 1px solid #e5e7eb; }
+    .event-info .label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; color: #9ca3af; font-weight: 600; }
+    .event-info .value { font-size: 0.9rem; color: #111827; font-weight: 500; margin-top: 0.1rem; }
+    .event-info .row { display: flex; gap: 1.5rem; margin-bottom: 0.5rem; }
+    .event-info .row:last-child { margin-bottom: 0; }
+    form { padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
+    label { font-size: 0.75rem; font-weight: 600; color: #374151; display: block; margin-bottom: 0.3rem; }
+    input, textarea { width: 100%; border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 0.6rem 0.75rem; font-size: 0.9rem; outline: none; transition: border 0.15s; }
+    input:focus, textarea:focus { border-color: #1f2937; box-shadow: 0 0 0 2px rgba(31,41,55,0.1); }
+    textarea { resize: none; height: 72px; }
+    .size-row { display: flex; gap: 0.5rem; align-items: center; }
+    .size-btn { width: 2rem; height: 2rem; border: 1px solid #e5e7eb; border-radius: 0.4rem; background: white; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .size-btn:hover { background: #f3f4f6; }
+    .size-val { font-size: 1.1rem; font-weight: 700; color: #111827; min-width: 2rem; text-align: center; }
+    .submit-btn { background: #1f2937; color: white; border: none; border-radius: 0.5rem; padding: 0.75rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+    .submit-btn:hover { background: #374151; }
+    .submit-btn:disabled { background: #9ca3af; cursor: not-allowed; }
+    .success { padding: 2rem 1.5rem; text-align: center; }
+    .success .icon { font-size: 3rem; margin-bottom: 0.75rem; }
+    .success h2 { font-size: 1.1rem; font-weight: 700; color: #111827; margin-bottom: 0.5rem; }
+    .success p { font-size: 0.85rem; color: #6b7280; }
+    .error-msg { color: #dc2626; font-size: 0.75rem; margin-top: 0.25rem; }
+    .loading { padding: 3rem; text-align: center; color: #9ca3af; font-size: 0.9rem; }
+    .not-found { padding: 2rem 1.5rem; text-align: center; color: #6b7280; }
+    .not-found h2 { font-size: 1rem; font-weight: 600; color: #111827; margin-bottom: 0.5rem; }
+  </style>
+</head>
+<body>
+  <div class="card" id="app">
+    <div class="loading">Loading event details…</div>
+  </div>
+
+  <script define:vars={{ token }}>
+    let partySize = 1;
+    let booking = null;
+
+    async function loadEvent() {
+      try {
+        const res = await fetch(`/api/rsvp/${token}`);
+        const data = await res.json();
+        if (!res.ok) { showNotFound(data.error); return; }
+        booking = data.booking;
+        renderForm();
+      } catch {
+        showNotFound('Could not load event.');
+      }
+    }
+
+    function formatDate(d) {
+      if (!d) return '—';
+      const [y, m, day] = d.split('-');
+      return new Date(y, m - 1, day).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    }
+
+    function renderForm() {
+      document.getElementById('app').innerHTML = `
+        <div class="header">
+          <h1>You're Invited!</h1>
+          <p>Please register below so we can prepare for you</p>
+        </div>
+        <div class="event-info">
+          <div class="row">
+            <div>
+              <div class="label">Event</div>
+              <div class="value">${booking.clientName || '—'}</div>
+            </div>
+            <div>
+              <div class="label">Type</div>
+              <div class="value" style="text-transform:capitalize">${booking.eventType || '—'}</div>
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <div class="label">Date</div>
+              <div class="value">${formatDate(booking.eventDate)}</div>
+            </div>
+            ${booking.startTime ? `<div><div class="label">Time</div><div class="value">${booking.startTime}${booking.endTime ? ' – ' + booking.endTime : ''}</div></div>` : ''}
+          </div>
+        </div>
+        <form id="rsvpForm">
+          <div>
+            <label for="guestName">Your Full Name *</label>
+            <input id="guestName" type="text" placeholder="e.g. John Smith" autocomplete="name" required />
+            <div class="error-msg" id="nameErr"></div>
+          </div>
+          <div>
+            <label>Number of People in Your Party *</label>
+            <div class="size-row">
+              <button type="button" class="size-btn" id="sizeDown">−</button>
+              <span class="size-val" id="sizeVal">1</span>
+              <button type="button" class="size-btn" id="sizeUp">+</button>
+              <span style="font-size:0.75rem;color:#6b7280;margin-left:0.5rem">including yourself</span>
+            </div>
+          </div>
+          <div>
+            <label for="notes">Dietary Restrictions or Notes <span style="font-weight:400;color:#9ca3af">(optional)</span></label>
+            <textarea id="notes" placeholder="e.g. vegetarian, nut allergy…"></textarea>
+          </div>
+          <button type="submit" class="submit-btn" id="submitBtn">Register →</button>
+        </form>
+      `;
+
+      document.getElementById('sizeDown').onclick = () => { if (partySize > 1) { partySize--; document.getElementById('sizeVal').textContent = partySize; } };
+      document.getElementById('sizeUp').onclick = () => { if (partySize < 20) { partySize++; document.getElementById('sizeVal').textContent = partySize; } };
+
+      document.getElementById('rsvpForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('guestName').value.trim();
+        const notes = document.getElementById('notes').value.trim();
+        if (!name) { document.getElementById('nameErr').textContent = 'Please enter your name.'; return; }
+        document.getElementById('nameErr').textContent = '';
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true; btn.textContent = 'Submitting…';
+        try {
+          const res = await fetch(`/api/rsvp/${token}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ guestName: name, partySize, notes }),
+          });
+          if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
+          showSuccess(name, partySize);
+        } catch (err) {
+          btn.disabled = false; btn.textContent = 'Register →';
+          alert(err.message || 'Something went wrong. Please try again.');
+        }
+      };
+    }
+
+    function showSuccess(name, size) {
+      document.getElementById('app').innerHTML = `
+        <div class="header"><h1>You're Registered!</h1><p>See you at the event</p></div>
+        <div class="success">
+          <div class="icon">🎉</div>
+          <h2>Thank you, ${name}!</h2>
+          <p>We've noted <strong>${size} guest${size > 1 ? 's' : ''}</strong> for your party.<br/>The host will be in touch with any updates.</p>
+        </div>
+      `;
+    }
+
+    function showNotFound(msg) {
+      document.getElementById('app').innerHTML = `
+        <div class="header"><h1>Event RSVP</h1></div>
+        <div class="not-found">
+          <h2>Link Not Found</h2>
+          <p>${msg || 'This RSVP link is invalid or has expired.'}</p>
+        </div>
+      `;
+    }
+
+    loadEvent();
+  </script>
+</body>
+</html>

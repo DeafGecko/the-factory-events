@@ -1,7 +1,7 @@
 // src/components/admin/BookingEditForm.tsx
 // React edit form for updating booking details
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CheckCircle, XCircle } from 'lucide-react';
 
 interface Booking {
@@ -113,7 +113,8 @@ const balance = (formData.totalPrice || 0) - (formData.amountPaid || 0);
             setSuccess(true);
 // Redirect back to bookings list after a short delay
             setTimeout(() => {
-                  window.location.href = '/admin';
+                  const back = new URLSearchParams(window.location.search).get('from');
+                  window.location.href = back === 'calendar' ? '/admin/calendar' : '/admin';
             }, 1500);
       } catch (err: any) {
             setError(err.message || 'Something went wrong');
@@ -434,7 +435,7 @@ return (
                         Reset
                   </button>
                   <a
-                        href="/admin"
+                        href={new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '').get('from') === 'calendar' ? '/admin/calendar' : '/admin'}
                         className="px-6 py-2.5 rounded-md text-[#6b7280] hover:text-[#111827] transition text-sm ml-auto"
                   >
                         Cancel

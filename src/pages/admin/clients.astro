@@ -1,12 +1,12 @@
 ---
 import AdminLayout from '../../layouts/AdminLayout.astro';
-import { Users } from 'lucide-react';
+import ClientsTable from '../../components/admin/ClientsTable';
 ---
 
 <AdminLayout title="Clients">
-  <section class="flex flex-col items-center justify-center py-20">
-    <Users className="w-12 h-12 text-gray-300 mb-4" client:load />
-    <h2 class="text-2xl font-light tracking-wide mb-2">Client Management</h2>
-    <p class="text-[#6b7280]">This feature is coming soon. Stay tuned!</p>
-  </section>
+  <div class="mb-5">
+    <h2 class="text-xl font-light tracking-wide">Clients</h2>
+    <p class="text-sm text-[#8e8e93]">Manage client records and contact information.</p>
+  </div>
+  <ClientsTable client:load />
 </AdminLayout>

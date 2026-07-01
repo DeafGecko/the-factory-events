@@ -1,8 +1,6 @@
 // src/components/admin/BillsTable.tsx
-// Bills & Payments table with inline payment recording
-
 import { useState } from 'react';
-import { DollarSign, CheckCircle, AlertCircle, X, XCircle } from 'lucide-react';
+import { DollarSign, X, XCircle, RefreshCw } from 'lucide-react';
 
 interface Booking {
   _id: string;
@@ -17,58 +15,70 @@ interface Booking {
   assignedSpace?: string;
 }
 
-interface Props {
-  initialBookings: Booking[];
-}
+interface Props { initialBookings: Booking[]; }
+
+// Derive status from actual numbers — don't trust stale stored paymentStatus
+const deriveStatus = (totalPrice: number, amountPaid: number): string => {
+  const paid = amountPaid || 0;
+  const total = totalPrice || 0;
+  if (paid <= 0) return 'unpaid';
+  if (paid > total) return 'credit';
+  if (paid === total) return 'paid';
+  return 'partial';
+};
+
+const statusStyle = (s: string) =>
+  s === 'paid'    ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+  s === 'partial' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+  s === 'credit'  ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                    'bg-red-50 text-red-700 border-red-200';
+
+const statusLabel = (s: string) =>
+  s === 'paid'    ? 'Paid' :
+  s === 'partial' ? 'Partial' :
+  s === 'credit'  ? 'Owe Refund' :
+                    'Unpaid';
 
 export default function BillsTable({ initialBookings }: Props) {
-  const [bookings, setBookings] = useState(initialBookings);
-  const [loading, setLoading] = useState(false);
+  const [bookings, setBookings]       = useState(initialBookings);
+  const [loading, setLoading]         = useState(false);
   const [recordingId, setRecordingId] = useState<string | null>(null);
-  const [paymentAmount, setPaymentAmount] = useState<number>(0);
-  const [error, setError] = useState<string | null>(null);
+  const [paymentAmount, setPaymentAmount] = useState(0);
+  const [error, setError]             = useState<string | null>(null);
+  const [backfilling, setBackfilling] = useState(false);
 
-  // ── Record payment ──
-  const handleRecordPayment = async (id: string) => {
-    if (paymentAmount <= 0) {
-      setError('Amount must be greater than 0');
-      return;
-    }
+  const missingCount = bookings.filter(b => !b.accountNumber).length;
 
-    setLoading(true);
-    setError(null);
-
+  const handleBackfill = async () => {
+    setBackfilling(true);
     try {
-      const booking = bookings.find((b) => b._id === id);
-      if (!booking) throw new Error('Booking not found');
+      const res = await fetch('/api/admin/backfill-accounts', { method: 'POST' });
+      if (!res.ok) throw new Error('Backfill failed');
+      await res.json();
+      window.location.reload();
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setBackfilling(false);
+    }
+  };
 
+  const handleRecordPayment = async (id: string) => {
+    if (paymentAmount <= 0) { setError('Amount must be greater than 0'); return; }
+    setLoading(true); setError(null);
+    try {
+      const booking = bookings.find(b => b._id === id);
+      if (!booking) throw new Error('Booking not found');
       const newAmountPaid = (booking.amountPaid || 0) + paymentAmount;
       const newStatus = newAmountPaid >= (booking.totalPrice || 0) ? 'paid' : 'partial';
-
       const res = await fetch(`/api/admin/bookings/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amountPaid: newAmountPaid,
-          paymentStatus: newStatus,
-        }),
+        body: JSON.stringify({ amountPaid: newAmountPaid, paymentStatus: newStatus }),
       });
-
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || 'Failed to record payment');
-      }
-
-      // Update local state
-      setBookings((prev) =>
-        prev.map((b) =>
-          b._id === id
-            ? { ...b, amountPaid: newAmountPaid, paymentStatus: newStatus }
-            : b
-        )
-      );
-      setRecordingId(null);
-      setPaymentAmount(0);
+      if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Failed'); }
+      setBookings(prev => prev.map(b => b._id === id ? { ...b, amountPaid: newAmountPaid, paymentStatus: newStatus } : b));
+      setRecordingId(null); setPaymentAmount(0);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -76,187 +86,164 @@ export default function BillsTable({ initialBookings }: Props) {
     }
   };
 
-  // ── Cancel recording ──
-  const cancelRecording = () => {
-    setRecordingId(null);
-    setPaymentAmount(0);
-    setError(null);
-  };
+  const cancelRecording = () => { setRecordingId(null); setPaymentAmount(0); setError(null); };
+  const getBalance = (b: Booking) => (b.totalPrice || 0) - (b.amountPaid || 0);
 
-  // ── Calculate balance ──
-  const getBalance = (booking: Booking) => {
-    return (booking.totalPrice || 0) - (booking.amountPaid || 0);
-  };
-
-  // ── Status label ──
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'paid':
-        return 'Paid';
-      case 'partial':
-        return 'Partial';
-      default:
-        return 'Unpaid';
-    }
-  };
-
-  const getStatusStyles = (status: string) => {
-    switch (status) {
-      case 'paid':
-        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-      case 'partial':
-        return 'bg-amber-50 text-amber-700 border-amber-200';
-      default:
-        return 'bg-gray-50 text-gray-600 border-gray-200';
-    }
-  };
-
-  // ── Totals ──
-  const totalRevenue = bookings.reduce((sum, b) => sum + (b.totalPrice || 0), 0);
-  const totalPaid = bookings.reduce((sum, b) => sum + (b.amountPaid || 0), 0);
+  const totalRevenue     = bookings.reduce((s, b) => s + (b.totalPrice || 0), 0);
+  const totalPaid        = bookings.reduce((s, b) => s + (b.amountPaid || 0), 0);
   const totalOutstanding = totalRevenue - totalPaid;
+
+  const counts = {
+    paid:    bookings.filter(b => deriveStatus(b.totalPrice, b.amountPaid) === 'paid').length,
+    partial: bookings.filter(b => deriveStatus(b.totalPrice, b.amountPaid) === 'partial').length,
+    unpaid:  bookings.filter(b => deriveStatus(b.totalPrice, b.amountPaid) === 'unpaid').length,
+    credit:  bookings.filter(b => deriveStatus(b.totalPrice, b.amountPaid) === 'credit').length,
+  };
+
+  const handleMarkRefunded = async (id: string) => {
+    if (!confirm('Mark this refund as paid out? Amount paid will be reset to the total.')) return;
+    setLoading(true); setError(null);
+    try {
+      const booking = bookings.find(b => b._id === id);
+      if (!booking) throw new Error('Booking not found');
+      const res = await fetch(`/api/admin/bookings/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amountPaid: booking.totalPrice, paymentStatus: 'paid' }),
+      });
+      if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Failed'); }
+      setBookings(prev => prev.map(b => b._id === id ? { ...b, amountPaid: booking.totalPrice, paymentStatus: 'paid' } : b));
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="bg-white rounded-xl border border-[#e5e7eb] shadow-sm overflow-hidden">
-      {/* Header */}
-      <div className="px-6 py-4 border-b border-[#e5e7eb] bg-[#f9fafb] flex flex-wrap items-center justify-between gap-3">
-        <span className="text-sm text-[#6b7280]">
-          {bookings.length} booking{bookings.length !== 1 ? 's' : ''}
-        </span>
-        <div className="flex items-center gap-4 text-sm">
-          <span className="text-emerald-600">✓ Paid: {bookings.filter((b) => b.paymentStatus === 'paid').length}</span>
-          <span className="text-amber-600">◐ Partial: {bookings.filter((b) => b.paymentStatus === 'partial').length}</span>
-          <span className="text-gray-600">○ Unpaid: {bookings.filter((b) => b.paymentStatus === 'unpaid' || !b.paymentStatus).length}</span>
+
+      {/* Toolbar */}
+      <div className="px-3 py-2.5 border-b border-[#e5e7eb] flex flex-wrap items-center justify-between gap-2">
+        <div className="flex-1" />
+        <div className="flex items-center gap-3 text-xs">
+          <span className="text-emerald-600 font-medium">{counts.paid} paid</span>
+          <span className="text-amber-600 font-medium">{counts.partial} partial</span>
+          <span className="text-red-600 font-medium">{counts.unpaid} unpaid</span>
+          {counts.credit > 0 && <span className="text-blue-600 font-medium">{counts.credit} owe refund</span>}
         </div>
+        {missingCount > 0 && (
+          <button type="button" onClick={handleBackfill} disabled={backfilling}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-md border border-amber-300 bg-amber-50 text-amber-700 text-xs hover:bg-amber-100 transition disabled:opacity-50">
+            <RefreshCw className={`w-3 h-3 ${backfilling ? 'animate-spin' : ''}`} />
+            {backfilling ? 'Assigning…' : `Assign account #s (${missingCount} missing)`}
+          </button>
+        )}
       </div>
 
       {/* Error */}
       {error && (
-        <div className="px-6 py-3 bg-red-50 text-red-600 text-sm border-b border-red-200 flex items-center gap-2">
-          <XCircle className="w-4 h-4 shrink-0" /> {error}
+        <div className="px-4 py-2 bg-red-50 text-red-600 text-xs border-b border-red-200 flex items-center gap-2">
+          <XCircle className="w-3.5 h-3.5 shrink-0" /> {error}
         </div>
       )}
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full">
           <thead>
-            <tr className="border-b border-[#e5e7eb] bg-[#f3f4f6]">
-              <th className="text-left py-3 px-4 font-semibold text-[#6b7280] text-[10px] uppercase tracking-[0.8px]">Account</th>
-              <th className="text-left py-3 px-4 font-semibold text-[#6b7280] text-[10px] uppercase tracking-[0.8px]">Client</th>
-              <th className="text-left py-3 px-4 font-semibold text-[#6b7280] text-[10px] uppercase tracking-[0.8px] hidden md:table-cell">Event</th>
-              <th className="text-left py-3 px-4 font-semibold text-[#6b7280] text-[10px] uppercase tracking-[0.8px]">Total</th>
-              <th className="text-left py-3 px-4 font-semibold text-[#6b7280] text-[10px] uppercase tracking-[0.8px]">Paid</th>
-              <th className="text-left py-3 px-4 font-semibold text-[#6b7280] text-[10px] uppercase tracking-[0.8px]">Balance</th>
-              <th className="text-left py-3 px-4 font-semibold text-[#6b7280] text-[10px] uppercase tracking-[0.8px]">Status</th>
-              <th className="text-left py-3 px-4 font-semibold text-[#6b7280] text-[10px] uppercase tracking-[0.8px]">Actions</th>
+            <tr className="bg-[#f9fafb] border-b border-[#e5e7eb]">
+              {['Account', 'Client', 'Date', 'Total', 'Paid', 'Balance', 'Status', 'Actions'].map(h => (
+                <th key={h} className={`text-left px-3 py-2 text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]
+                  ${h === 'Date' ? 'hidden md:table-cell' : ''}
+                  ${h === 'Actions' ? 'w-36' : ''}`}>{h}</th>
+              ))}
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-[#f3f4f6]">
             {bookings.length === 0 ? (
               <tr>
                 <td colSpan={8} className="py-12 text-center text-[#9ca3af]">
-                  <DollarSign className="w-10 h-10 mx-auto mb-3 text-[#9ca3af]" />
-                  <p className="text-sm">No bookings found.</p>
+                  <DollarSign className="w-10 h-10 mx-auto mb-2 text-[#e5e7eb]" />
+                  <p className="text-xs">No billing records found.</p>
                 </td>
               </tr>
-            ) : (
-              bookings.map((b) => {
-                const balance = getBalance(b);
-                return (
-                  <tr key={b._id} className="border-b border-[#f3f4f6] hover:bg-[#f9fafb] transition">
-                    <td className="py-3 px-4 font-mono text-xs text-[#111827]">{b.accountNumber}</td>
-                    <td className="py-3 px-4 font-medium text-[#111827]">{b.clientName}</td>
-                    <td className="py-3 px-4 text-[#6b7280] hidden md:table-cell">
-                      {b.eventDate ? new Date(b.eventDate).toLocaleDateString() : '—'}
-                    </td>
-                    <td className="py-3 px-4 font-medium text-[#111827]">${(b.totalPrice || 0).toFixed(2)}</td>
-                    <td className="py-3 px-4 text-[#111827]">${(b.amountPaid || 0).toFixed(2)}</td>
-                    <td className={`py-3 px-4 font-medium ${balance > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
-                      ${balance.toFixed(2)}
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusStyles(b.paymentStatus)}`}>
-                        {getStatusLabel(b.paymentStatus)}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4">
-                      {recordingId === b._id ? (
-                        // ── Inline payment form ──
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="number"
-                            step="0.01"
-                            min="0.01"
-                            max={balance}
-                            value={paymentAmount || ''}
-                            onChange={(e) => setPaymentAmount(parseFloat(e.target.value) || 0)}
-                            className="w-24 border border-[#e5e7eb] rounded-md px-2 py-1 text-sm ring-primary"
-                            placeholder="$"
-                            disabled={loading}
-                          />
-                          <button
-                            onClick={() => handleRecordPayment(b._id)}
-                            disabled={loading || paymentAmount <= 0}
-                            className="px-3 py-1 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition text-xs disabled:opacity-50"
-                          >
-                            Save
-                          </button>
-                          <button
-                            onClick={cancelRecording}
-                            className="p-1 text-[#6b7280] hover:text-[#111827]"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ) : (
-                        // ── Record Payment button ──
-                        <button
-                          onClick={() => {
-                            setRecordingId(b._id);
-                            setPaymentAmount(balance > 0 ? balance : 0);
-                            setError(null);
-                          }}
-                          disabled={balance <= 0}
-                          className={`px-3 py-1 rounded-md text-xs font-medium transition ${
-                            balance > 0
-                              ? 'btn-primary'
-                              : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                          }`}
-                        >
-                          {balance > 0 ? 'Record Payment' : 'Fully Paid'}
+            ) : bookings.map(b => {
+              const balance = getBalance(b);
+              const effectiveStatus = deriveStatus(b.totalPrice, b.amountPaid);
+              return (
+                <tr key={b._id} className="hover:bg-[#fafafa] transition">
+                  <td className="px-3 py-2 font-mono text-xs text-[#6b7280]">
+                    {b.accountNumber || <span className="text-amber-500 italic">unassigned</span>}
+                  </td>
+                  <td className="px-3 py-2">
+                    <p className="text-sm font-medium text-[#111827] leading-tight">{b.clientName}</p>
+                    <p className="text-[0.65rem] text-[#9ca3af]">{b.email}</p>
+                  </td>
+                  <td className="px-3 py-2 text-xs text-[#6b7280] hidden md:table-cell">
+                    {b.eventDate ? new Date(b.eventDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
+                  </td>
+                  <td className="px-3 py-2 text-xs font-medium text-[#111827]">${(b.totalPrice || 0).toFixed(2)}</td>
+                  <td className="px-3 py-2 text-xs text-[#6b7280]">${(b.amountPaid || 0).toFixed(2)}</td>
+                  <td className={`px-3 py-2 text-xs font-medium ${balance > 0 ? 'text-red-600' : balance < 0 ? 'text-blue-600' : 'text-emerald-600'}`}>
+                    ${balance.toFixed(2)}
+                  </td>
+                  <td className="px-3 py-2">
+                    <span className={`inline-flex px-2 py-0.5 rounded-full text-[0.6rem] font-medium border ${statusStyle(effectiveStatus)}`}>
+                      {statusLabel(effectiveStatus)}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2 w-36">
+                    {recordingId === b._id ? (
+                      <div className="flex items-center gap-1">
+                        <input type="number" step="0.01" min="0.01" max={balance}
+                          value={paymentAmount || ''}
+                          onChange={e => setPaymentAmount(parseFloat(e.target.value) || 0)}
+                          placeholder="$" disabled={loading}
+                          className="w-16 h-7 border border-[#e5e7eb] rounded-md px-2 text-xs focus:outline-none focus:ring-1 focus:ring-[#374151]" />
+                        <button type="button" onClick={() => handleRecordPayment(b._id)}
+                          disabled={loading || paymentAmount <= 0}
+                          className="h-7 px-2.5 rounded-md bg-emerald-600 text-white text-xs hover:bg-emerald-700 transition disabled:opacity-50">
+                          Save
                         </button>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })
-            )}
+                        <button type="button" onClick={cancelRecording} title="Cancel"
+                          className="h-7 w-7 flex items-center justify-center rounded-md text-[#9ca3af] hover:text-[#374151] hover:bg-[#f3f4f6] transition">
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button type="button"
+                        onClick={effectiveStatus === 'credit'
+                          ? () => handleMarkRefunded(b._id)
+                          : () => { setRecordingId(b._id); setPaymentAmount(balance > 0 ? balance : 0); setError(null); }}
+                        disabled={effectiveStatus === 'paid'}
+                        className={`w-full h-7 rounded-md text-xs font-medium transition ${effectiveStatus === 'unpaid' || effectiveStatus === 'partial' ? 'btn-primary' : effectiveStatus === 'credit' ? 'bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100' : 'bg-[#f3f4f6] text-[#9ca3af] cursor-not-allowed'}`}>
+                        {effectiveStatus === 'paid' ? 'Fully Paid' : effectiveStatus === 'credit' ? 'Mark Refunded' : 'Record Payment'}
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
           <tfoot>
-            <tr className="bg-[#f3f4f6] border-t-2 border-[#e5e7eb]">
-              <td colSpan={3} className="py-3 px-4 font-semibold text-[#111827]">Totals</td>
-              <td className="py-3 px-4 font-semibold text-[#111827]">${totalRevenue.toFixed(2)}</td>
-              <td className="py-3 px-4 font-semibold text-[#111827]">${totalPaid.toFixed(2)}</td>
-              <td className={`py-3 px-4 font-semibold ${totalOutstanding > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+            <tr className="bg-[#f9fafb] border-t-2 border-[#e5e7eb]">
+              <td colSpan={3} className="px-3 py-2 text-xs font-semibold text-[#374151]">Totals</td>
+              <td className="px-3 py-2 text-xs font-semibold text-[#111827]">${totalRevenue.toFixed(2)}</td>
+              <td className="px-3 py-2 text-xs font-semibold text-[#111827]">${totalPaid.toFixed(2)}</td>
+              <td className={`px-3 py-2 text-xs font-semibold ${totalOutstanding > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
                 ${totalOutstanding.toFixed(2)}
               </td>
-              <td colSpan={2}></td>
+              <td colSpan={2} />
             </tr>
           </tfoot>
         </table>
       </div>
 
-      {/* Footer stats */}
-      <div className="px-6 py-3 border-t border-[#e5e7eb] bg-[#f9fafb] flex flex-wrap items-center justify-between gap-3 text-sm text-[#6b7280]">
-        <span>
-          {bookings.filter((b) => b.paymentStatus === 'paid').length} paid ·{' '}
-          {bookings.filter((b) => b.paymentStatus === 'partial').length} partial ·{' '}
-          {bookings.filter((b) => b.paymentStatus === 'unpaid' || !b.paymentStatus).length} unpaid
-        </span>
-        <span>
-          Outstanding: <strong className="text-red-600">${totalOutstanding.toFixed(2)}</strong>
-        </span>
+      {/* Footer */}
+      <div className="px-4 py-2 border-t border-[#e5e7eb] flex items-center justify-between text-xs text-[#9ca3af]">
+        <span>{bookings.length} record{bookings.length !== 1 ? 's' : ''}</span>
+        <span>Outstanding: <strong className="text-red-600">${totalOutstanding.toFixed(2)}</strong></span>
       </div>
     </div>
   );

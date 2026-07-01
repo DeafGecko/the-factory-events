@@ -1,6 +1,6 @@
 // src/components/admin/QRScanTable.tsx
 import { useState, useEffect } from 'react';
-import { Search, QrCode, RefreshCw, XCircle } from 'lucide-react';
+import { QrCode, RefreshCw, XCircle } from 'lucide-react';
 
 interface Scan {
   id: string;
@@ -20,7 +20,6 @@ export default function QRScanTable() {
   const [scans, setScans] = useState<Scan[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [search, setSearch] = useState('');
 
   const fetchScans = async () => {
     setLoading(true);
@@ -38,15 +37,6 @@ export default function QRScanTable() {
   };
 
   useEffect(() => { fetchScans(); }, []);
-
-  const filteredScans = scans.filter((scan) => {
-    const q = search.toLowerCase();
-    return (
-      scan.event?.clientName?.toLowerCase().includes(q) ||
-      scan.event?.accountNumber?.toLowerCase().includes(q) ||
-      scan.id?.toLowerCase().includes(q)
-    );
-  });
 
   if (loading) {
     return (
@@ -68,22 +58,13 @@ export default function QRScanTable() {
   return (
     <div className="bg-white rounded-xl border border-[#e5e7eb] shadow-sm overflow-hidden">
       {/* Toolbar */}
-      <div className="px-6 py-4 border-b border-[#e5e7eb] bg-[#f9fafb] flex flex-wrap items-center justify-between gap-3">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <input
-            type="text"
-            placeholder="Search by client, account, or scan ID..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 border border-[#e5e7eb] rounded-lg bg-white text-sm text-gray-900 placeholder:text-gray-400 ring-primary transition"
-          />
-        </div>
+      <div className="px-3 py-2 border-b border-[#e5e7eb] flex items-center justify-between gap-2">
+        <span className="text-xs text-[#9ca3af]">{scans.length} scan{scans.length !== 1 ? 's' : ''} recorded</span>
         <button
           onClick={fetchScans}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-[#e5e7eb] hover:bg-[#f3f4f6] transition text-sm"
+          className="h-8 flex items-center gap-1 px-3 rounded-md border border-[#e5e7eb] hover:bg-[#f3f4f6] transition text-xs"
         >
-          <RefreshCw className="w-4 h-4" />
+          <RefreshCw className="w-3.5 h-3.5" />
           Refresh
         </button>
       </div>
@@ -92,36 +73,36 @@ export default function QRScanTable() {
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-[#e5e7eb] bg-[#f3f4f6]">
+            <tr className="border-b border-[#e5e7eb] bg-[#f9fafb]">
               {['Scan ID', 'Event / Booking', 'Client', 'Scanned By', 'Date / Time'].map((h) => (
-                <th key={h} className="text-left py-3 px-4 font-semibold text-[#6b7280] text-[10px] uppercase tracking-[0.8px]">{h}</th>
+                <th key={h} className="text-left py-2 px-3 text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]">{h}</th>
               ))}
             </tr>
           </thead>
-          <tbody>
-            {filteredScans.length === 0 ? (
+          <tbody className="divide-y divide-[#f3f4f6]">
+            {scans.length === 0 ? (
               <tr>
                 <td colSpan={5} className="py-12 text-center text-gray-400">
-                  <QrCode className="w-12 h-12 mx-auto mb-3" />
-                  <p className="text-sm">No QR scans recorded yet.</p>
+                  <QrCode className="w-8 h-8 mx-auto mb-2 text-[#e5e7eb]" />
+                  <p className="text-xs">No QR scans recorded yet.</p>
                 </td>
               </tr>
             ) : (
-              filteredScans.map((scan) => (
-                <tr key={scan.id} className="border-b border-[#f3f4f6] hover:bg-[#f9fafb] transition">
-                  <td className="py-3 px-4 font-mono text-xs text-gray-900">{scan.id.slice(0, 8)}…</td>
-                  <td className="py-3 px-4">
+              scans.map((scan) => (
+                <tr key={scan.id} className="hover:bg-[#fafafa] transition">
+                  <td className="py-2 px-3 font-mono text-xs text-gray-900">{scan.id.slice(0, 8)}…</td>
+                  <td className="py-2 px-3">
                     {scan.event ? (
-                      <a href={`/admin/edit/${scan.event._id}`} className="text-gray-900 hover:underline">
+                      <a href={`/admin/edit/${scan.event._id}`} className="text-xs text-gray-900 hover:underline">
                         {scan.event.accountNumber}
                       </a>
                     ) : (
-                      <span className="text-gray-400">Unknown</span>
+                      <span className="text-xs text-gray-400">Unknown</span>
                     )}
                   </td>
-                  <td className="py-3 px-4 text-gray-900">{scan.event?.clientName || '—'}</td>
-                  <td className="py-3 px-4 text-[#6b7280]">{scan.scanned_by || '—'}</td>
-                  <td className="py-3 px-4 text-[#6b7280]">
+                  <td className="py-2 px-3 text-xs text-gray-900">{scan.event?.clientName || '—'}</td>
+                  <td className="py-2 px-3 text-xs text-[#6b7280]">{scan.scanned_by || '—'}</td>
+                  <td className="py-2 px-3 text-xs text-[#6b7280]">
                     {scan.scanned_at_local || new Date(scan.scanned_at * 1000).toLocaleString()}
                   </td>
                 </tr>
@@ -132,8 +113,8 @@ export default function QRScanTable() {
       </div>
 
       {/* Footer */}
-      <div className="px-6 py-3 border-t border-[#e5e7eb] bg-[#f9fafb] flex items-center justify-between text-sm text-[#6b7280]">
-        <span>{filteredScans.length} scan{filteredScans.length !== 1 ? 's' : ''} shown</span>
+      <div className="px-4 py-2 border-t border-[#e5e7eb] flex items-center justify-between text-xs text-[#9ca3af]">
+        <span>Most recent first</span>
         <span>Total: {scans.length} recorded</span>
       </div>
     </div>

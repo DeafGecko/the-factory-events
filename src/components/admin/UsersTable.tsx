@@ -10,22 +10,30 @@ interface User {
   isActive: boolean;
 }
 
+const ROLES = ['admin', 'developer', 'manager', 'viewer'] as const;
+
+const roleBadge: Record<string, string> = {
+  admin:     'bg-purple-50 text-purple-700 border-purple-200',
+  developer: 'bg-blue-50 text-blue-700 border-blue-200',
+  manager:   'bg-amber-50 text-amber-700 border-amber-200',
+  viewer:    'bg-gray-100 text-gray-600 border-gray-200',
+};
+
 export default function UsersTable() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [showInviteModal, setShowInviteModal] = useState(false);
-  const [inviteForm, setInviteForm] = useState({ name: '', email: '', role: 'viewer' });
-  const [inviting, setInviting] = useState(false);
-  const [inviteError, setInviteError] = useState<string | null>(null);
+  const [users, setUsers]               = useState<User[]>([]);
+  const [loading, setLoading]           = useState(true);
+  const [error, setError]               = useState<string | null>(null);
+  const [showModal, setShowModal]       = useState(false);
+  const [inviteForm, setInviteForm]     = useState({ name: '', email: '', role: 'viewer' });
+  const [inviting, setInviting]         = useState(false);
+  const [inviteError, setInviteError]   = useState<string | null>(null);
 
   const fetchUsers = async () => {
     setLoading(true);
     try {
       const res = await fetch('/api/admin/users');
       if (!res.ok) throw new Error('Failed to load users');
-      const data = await res.json();
-      setUsers(data);
+      setUsers(await res.json());
       setError(null);
     } catch (err: any) {
       setError(err.message);
@@ -34,11 +42,8 @@ export default function UsersTable() {
     }
   };
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+  useEffect(() => { fetchUsers(); }, []);
 
-  // ── Invite new admin ──
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
     setInviteError(null);
@@ -51,8 +56,8 @@ export default function UsersTable() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to send invitation');
-      await fetchUsers(); // refresh list
-      setShowInviteModal(false);
+      await fetchUsers();
+      setShowModal(false);
       setInviteForm({ name: '', email: '', role: 'viewer' });
     } catch (err: any) {
       setInviteError(err.message);
@@ -61,7 +66,6 @@ export default function UsersTable() {
     }
   };
 
-  // ── Role change ──
   const handleRoleChange = async (id: string, role: string) => {
     try {
       const res = await fetch(`/api/admin/users/${id}`, {
@@ -69,17 +73,11 @@ export default function UsersTable() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role }),
       });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || 'Failed to update role');
-      }
+      if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Failed'); }
       setUsers(users.map(u => u._id === id ? { ...u, role: role as User['role'] } : u));
-    } catch (err: any) {
-      alert(err.message);
-    }
+    } catch (err: any) { alert(err.message); }
   };
 
-  // ── Reset password ──
   const handleResetPassword = async (id: string) => {
     if (!confirm('Reset password for this user? A temporary password will be sent.')) return;
     try {
@@ -88,206 +86,153 @@ export default function UsersTable() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: id }),
       });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || 'Failed to reset password');
-      }
-      alert('Password reset email sent (check console for temporary password).');
-    } catch (err: any) {
-      alert(err.message);
-    }
+      if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Failed'); }
+      alert('Password reset email sent.');
+    } catch (err: any) { alert(err.message); }
   };
 
-  // ── Block / Unblock ──
-  const handleToggleBlock = async (id: string, currentStatus: boolean) => {
-    const action = currentStatus ? 'block' : 'unblock';
-    if (!confirm(`${action} this user? They will ${currentStatus ? 'not be able to' : 'be able to'} log in.`)) return;
+  const handleToggleBlock = async (id: string, isActive: boolean) => {
+    if (!confirm(`${isActive ? 'Block' : 'Unblock'} this user?`)) return;
     try {
       const res = await fetch(`/api/admin/users/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isActive: !currentStatus }),
+        body: JSON.stringify({ isActive: !isActive }),
       });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || 'Failed to update status');
-      }
-      setUsers(users.map(u => u._id === id ? { ...u, isActive: !currentStatus } : u));
-    } catch (err: any) {
-      alert(err.message);
-    }
+      if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Failed'); }
+      setUsers(users.map(u => u._id === id ? { ...u, isActive: !isActive } : u));
+    } catch (err: any) { alert(err.message); }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12 text-[#8e8e93]">
-        <RefreshCw className="w-5 h-5 animate-spin mr-2" />
-        Loading users...
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="flex items-center gap-2 py-10 text-sm text-[#6b7280]">
+      <RefreshCw className="w-4 h-4 animate-spin" /> Loading…
+    </div>
+  );
 
-  if (error) {
-    return (
-      <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md text-sm">
-        ❌ {error}
-      </div>
-    );
-  }
+  if (error) return (
+    <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">{error}</div>
+  );
 
   return (
-    <div className="bg-white rounded-xl border border-[#e8e4dc] shadow-sm overflow-hidden">
-      {/* ── Header with Add Button ── */}
-      <div className="px-6 py-4 border-b border-[#e8e4dc] bg-[#faf9f7] flex flex-wrap items-center justify-between gap-3">
-        <span className="text-sm text-[#8a7a6a]">
-          {users.length} admin user{users.length !== 1 ? 's' : ''}
-        </span>
-        <button
-          onClick={() => setShowInviteModal(true)}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#1c1c1e] text-white hover:bg-[#2c2c2e] transition text-sm"
-        >
-          <Plus className="w-4 h-4" />
-          Add New Admin
-        </button>
-      </div>
+    <>
+      <div className="bg-white rounded-xl border border-[#e5e7eb] shadow-sm overflow-hidden">
 
-      {/* ── Table ── */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-[#e8e4dc] bg-[#f5f3ef]">
-              <th className="text-left py-3 px-4 font-semibold text-[#8a7a6a] text-[10px] uppercase tracking-[0.8px]">Name</th>
-              <th className="text-left py-3 px-4 font-semibold text-[#8a7a6a] text-[10px] uppercase tracking-[0.8px]">Email</th>
-              <th className="text-left py-3 px-4 font-semibold text-[#8a7a6a] text-[10px] uppercase tracking-[0.8px]">Role</th>
-              <th className="text-left py-3 px-4 font-semibold text-[#8a7a6a] text-[10px] uppercase tracking-[0.8px]">Status</th>
-              <th className="text-left py-3 px-4 font-semibold text-[#8a7a6a] text-[10px] uppercase tracking-[0.8px]">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="py-12 text-center text-[#b0a898]">
-                  <p className="text-sm">No admin users found.</p>
-                </td>
+        {/* Header */}
+        <div className="px-4 py-3 border-b border-[#e5e7eb] flex items-center justify-between gap-3">
+          <span className="text-xs text-[#6b7280]">
+            {users.length} user{users.length !== 1 ? 's' : ''} · {users.filter(u => u.isActive).length} active · {users.filter(u => !u.isActive).length} blocked
+          </span>
+          <button
+            onClick={() => setShowModal(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md btn-primary text-xs transition"
+          >
+            <Plus className="w-3.5 h-3.5" /> Add User
+          </button>
+        </div>
+
+        {/* Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-[#e5e7eb] bg-[#f9fafb]">
+                {['Name', 'Email', 'Role', 'Status', 'Actions'].map((h) => (
+                  <th key={h} className="text-left px-3 py-2 text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]">{h}</th>
+                ))}
               </tr>
-            ) : (
-              users.map((user) => (
-                <tr key={user._id} className="border-b border-[#f0ece6] hover:bg-[#faf9f7] transition">
-                  <td className="py-3 px-4 font-medium text-[#1c1c1e]">{user.name}</td>
-                  <td className="py-3 px-4 text-[#6a5a4a]">{user.email}</td>
-                  <td className="py-3 px-4">
+            </thead>
+            <tbody className="divide-y divide-[#f3f4f6]">
+              {users.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-10 text-center text-xs text-[#9ca3af]">No users found.</td>
+                </tr>
+              ) : users.map((user) => (
+                <tr key={user._id} className="hover:bg-[#fafafa] transition">
+                  <td className="px-3 py-2 text-sm font-medium text-[#111827]">{user.name}</td>
+                  <td className="px-3 py-2 text-xs text-[#6b7280]">{user.email}</td>
+                  <td className="px-3 py-2">
                     <select
                       value={user.role || 'viewer'}
                       onChange={(e) => handleRoleChange(user._id, e.target.value)}
-                      className="border border-[#e8e4dc] rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-[#1c1c1e]"
+                      title="User role"
+                      className={`text-[0.6rem] font-medium border rounded-md px-2 py-0.5 focus:outline-none focus:ring-1 focus:ring-[#374151] ${roleBadge[user.role] ?? ''}`}
                     >
-                      <option value="admin">Admin</option>
-                      <option value="developer">Developer</option>
-                      <option value="manager">Manager</option>
-                      <option value="viewer">Viewer</option>
+                      {ROLES.map(r => <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>)}
                     </select>
                   </td>
-                  <td className="py-3 px-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
-                      user.isActive
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                        : 'bg-red-50 text-red-700 border-red-200'
-                    }`}>
+                  <td className="px-3 py-2">
+                    <span className={`inline-flex px-2 py-0.5 rounded-full text-[0.6rem] font-medium border ${user.isActive ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
                       {user.isActive ? 'Active' : 'Blocked'}
                     </span>
                   </td>
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-2">
+                  <td className="px-3 py-2">
+                    <div className="flex items-center gap-1">
                       <button
                         onClick={() => handleResetPassword(user._id)}
-                        className="p-1.5 text-[#6a5a4a] hover:text-[#1c1c1e] hover:bg-[#f0ece6] rounded-md transition"
                         title="Reset password"
+                        className="p-1.5 rounded-md text-[#9ca3af] hover:text-[#374151] hover:bg-[#f3f4f6] transition"
                       >
-                        <Key className="w-4 h-4" />
+                        <Key className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => handleToggleBlock(user._id, user.isActive)}
-                        className={`p-1.5 rounded-md transition ${
-                          user.isActive
-                            ? 'text-[#b0a898] hover:text-red-600 hover:bg-red-50'
-                            : 'text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50'
-                        }`}
                         title={user.isActive ? 'Block user' : 'Unblock user'}
+                        className={`p-1.5 rounded-md transition ${user.isActive ? 'text-[#9ca3af] hover:text-red-600 hover:bg-red-50' : 'text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50'}`}
                       >
-                        <Shield className="w-4 h-4" />
+                        <Shield className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      {/* ── Invite Modal ── */}
-      {showInviteModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <div className="flex justify-between items-start mb-4">
-              <h3 className="text-lg font-light tracking-wide">Invite New Admin</h3>
-              <button
-                onClick={() => setShowInviteModal(false)}
-                className="p-1 hover:bg-[#f0ece6] rounded-md transition"
-              >
-                <X className="w-5 h-5 text-[#6a5a4a]" />
+      {/* Invite Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" onClick={() => setShowModal(false)}>
+          <div className="bg-white rounded-xl w-full max-w-sm p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-semibold text-[#111827]">Invite New User</h3>
+              <button type="button" onClick={() => setShowModal(false)} className="p-1 rounded-md hover:bg-[#f3f4f6] transition">
+                <X className="w-4 h-4 text-[#6b7280]" />
               </button>
             </div>
-            <form onSubmit={handleInvite} className="space-y-4">
+            <form onSubmit={handleInvite} className="space-y-3">
+              {[
+                { label: 'Full Name', key: 'name', type: 'text' },
+                { label: 'Email',     key: 'email', type: 'email' },
+              ].map(({ label, key, type }) => (
+                <div key={key}>
+                  <label className="block text-xs font-medium text-[#374151] mb-1">{label}</label>
+                  <input
+                    type={type}
+                    required
+                    value={inviteForm[key as 'name' | 'email']}
+                    onChange={(e) => setInviteForm({ ...inviteForm, [key]: e.target.value })}
+                    className="w-full border border-[#e5e7eb] rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151]"
+                  />
+                </div>
+              ))}
               <div>
-                <label className="block text-sm font-medium text-[#1c1c1e]">Full Name</label>
-                <input
-                  type="text"
-                  required
-                  value={inviteForm.name}
-                  onChange={(e) => setInviteForm({ ...inviteForm, name: e.target.value })}
-                  className="mt-1 w-full border border-[#e8e4dc] rounded-md px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#1c1c1e]"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-[#1c1c1e]">Email</label>
-                <input
-                  type="email"
-                  required
-                  value={inviteForm.email}
-                  onChange={(e) => setInviteForm({ ...inviteForm, email: e.target.value })}
-                  className="mt-1 w-full border border-[#e8e4dc] rounded-md px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#1c1c1e]"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-[#1c1c1e]">Role</label>
+                <label className="block text-xs font-medium text-[#374151] mb-1">Role</label>
                 <select
                   value={inviteForm.role}
                   onChange={(e) => setInviteForm({ ...inviteForm, role: e.target.value })}
-                  className="mt-1 w-full border border-[#e8e4dc] rounded-md px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#1c1c1e]"
+                  title="Role"
+                  className="w-full border border-[#e5e7eb] rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151]"
                 >
-                  <option value="admin">Admin</option>
-                  <option value="developer">Developer</option>
-                  <option value="manager">Manager</option>
-                  <option value="viewer">Viewer</option>
+                  {ROLES.map(r => <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>)}
                 </select>
               </div>
-              {inviteError && (
-                <div className="text-red-600 text-sm">{inviteError}</div>
-              )}
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="submit"
-                  disabled={inviting}
-                  className="flex-1 px-4 py-2 rounded-md bg-[#1c1c1e] text-white hover:bg-[#2c2c2e] transition text-sm disabled:opacity-50"
-                >
-                  {inviting ? 'Sending...' : 'Send Invitation'}
+              {inviteError && <p className="text-xs text-red-600">{inviteError}</p>}
+              <div className="flex gap-2 pt-1">
+                <button type="submit" disabled={inviting} className="flex-1 px-3 py-1.5 rounded-md btn-primary text-sm disabled:opacity-50 transition">
+                  {inviting ? 'Sending…' : 'Send Invite'}
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setShowInviteModal(false)}
-                  className="px-4 py-2 rounded-md border border-[#e8e4dc] hover:bg-[#f5f3ef] transition text-sm"
-                >
+                <button type="button" onClick={() => setShowModal(false)} className="px-3 py-1.5 rounded-md border border-[#e5e7eb] text-sm hover:bg-[#f9fafb] transition">
                   Cancel
                 </button>
               </div>
@@ -295,13 +240,6 @@ export default function UsersTable() {
           </div>
         </div>
       )}
-
-      {/* ── Footer ── */}
-      <div className="px-6 py-3 border-t border-[#e8e4dc] bg-[#faf9f7] flex flex-wrap items-center justify-between gap-3 text-sm text-[#8a7a6a]">
-        <span>
-          {users.filter(u => u.isActive).length} active · {users.filter(u => !u.isActive).length} blocked
-        </span>
-      </div>
-    </div>
+    </>
   );
 }

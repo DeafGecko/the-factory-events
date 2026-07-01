@@ -1,135 +1,159 @@
 ---
-// src/pages/admin/dashboard.astro
-// Admin Dashboard – stats, recent bookings
-
 import AdminLayout from "../../layouts/AdminLayout.astro";
+import DashboardCharts from "../../components/admin/DashboardCharts";
+import { DollarSign, CalendarDays, CalendarCheck, Users } from "lucide-react";
 import { sanityClient } from "../../lib/sanity";
 
-// Lucide icons
-import { DollarSign, CalendarDays, CalendarCheck, QrCode } from "lucide-react";
-
-// ─── Fetch all bookings from Sanity ───
 const bookings = await sanityClient.fetch(`
-  *[_type == "booking"] | order(createdAt desc) {
-    _id, accountNumber, clientName, eventDate, paymentStatus, amountPaid, totalPrice
+  *[_type == "booking"] | order(eventDate asc) {
+    _id, accountNumber, clientName, eventDate, eventType,
+    paymentStatus, amountPaid, totalPrice, createdAt
   }
 `);
 
-const totalBookings = bookings.length;
-const upcoming = bookings.filter(
-  (b: any) => b.eventDate && new Date(b.eventDate) > new Date(),
-).length;
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+const todayStr = today.toISOString().slice(0, 10);
 
-// ─── Real revenue: sum of amountPaid across all bookings ───
-const totalRevenue = bookings.reduce(
-  (sum: number, b: any) => sum + (b.amountPaid || 0), 0
-);
+const totalBookings   = bookings.length;
+const upcoming        = bookings.filter((b: any) => b.eventDate && new Date(b.eventDate) > new Date()).length;
+const totalRevenue    = bookings.reduce((sum: number, b: any) => sum + (b.amountPaid || 0), 0);
+const totalClients    = new Set(bookings.map((b: any) => b.clientName)).size;
 
-// ─── QR scans from D1 (falls back to 0 if DB unavailable) ───
-let qrScans = 0;
-try {
-  const scanData = await sanityClient.fetch(`count(*[_type == "qrScan"])`);
-  qrScans = scanData || 0;
-} catch (_) {}
+const recentBookings  = [...bookings].sort((a: any, b: any) => new Date(b.createdAt ?? b.eventDate).getTime() - new Date(a.createdAt ?? a.eventDate).getTime()).slice(0, 6);
+const todayEvents     = bookings.filter((b: any) => b.eventDate?.slice(0, 10) === todayStr);
 
+// Monthly revenue (last 6 months)
+const monthly: { month: string; revenue: number }[] = [];
+for (let i = 5; i >= 0; i--) {
+  const d = new Date();
+  d.setMonth(d.getMonth() - i);
+  const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  const label = d.toLocaleString('default', { month: 'short' });
+  const revenue = bookings
+    .filter((b: any) => b.eventDate?.startsWith(key))
+    .reduce((sum: number, b: any) => sum + (b.amountPaid || 0), 0);
+  monthly.push({ month: label, revenue });
+}
+
+const statusCounts = {
+  paid:    bookings.filter((b: any) => b.paymentStatus === 'paid').length,
+  partial: bookings.filter((b: any) => b.paymentStatus === 'partial').length,
+  unpaid:  bookings.filter((b: any) => !b.paymentStatus || b.paymentStatus === 'unpaid').length,
+};
+
+// Revenue by event/source type — normalize into canonical groups
+const normalize = (raw: string): string => {
+  const s = (raw || '').toLowerCase().trim();
+  if (/holiday|christmas|thanksgiving|new.?year|easter|halloween|independence|july.?4|4th.?of.?july|fall|autumn|st.?patrick|valentine|cinco.?de.?mayo|mayo|mardi.?gras|memorial|labor.?day|kwanzaa|hanukkah|diwali|lunar|april.?fool|juneteenth|junenth|summer/.test(s)) return 'Events';
+  if (/wedding|bridal|bride/.test(s))                                       return 'Wedding';
+  if (/corporate|business|conference|meeting|seminar/.test(s))              return 'Corporate';
+  if (/birthday|bday/.test(s))                                              return 'Birthday';
+  if (/party|celebration|gala/.test(s))                                     return 'Party';
+  if (/tenant|lease/.test(s))                                               return 'Tenant';
+  if (/venue|rental|hall|space/.test(s))                                    return 'Venue Rental';
+  if (/farm|market|farmers?.?market|fair/.test(s))                          return 'Farm Market';
+  if (/concert|show|performance|event/.test(s))                             return 'Concert / Show';
+  if (/graduation|grad/.test(s))                                            return 'Graduation';
+  if (/baby.?shower|bridal.?shower/.test(s))                               return 'Shower';
+  return raw?.trim() || 'Other';
+};
+
+const revenueByType: Record<string, number> = {};
+for (const b of bookings) {
+  const key = normalize(b.eventType);
+  revenueByType[key] = (revenueByType[key] || 0) + (b.amountPaid || 0);
+}
+const revenueSlices = Object.entries(revenueByType)
+  .map(([label, value]) => ({ label, value }))
+  .sort((a, b) => b.value - a.value);
+
+const stats = [
+  { label: 'Revenue',  value: `$${totalRevenue.toLocaleString()}`, icon: DollarSign  },
+  { label: 'Bookings', value: totalBookings,                        icon: CalendarDays },
+  { label: 'Upcoming', value: upcoming,                             icon: CalendarCheck },
+  { label: 'Clients',  value: totalClients,                         icon: Users        },
+];
 ---
 
 <AdminLayout title="Dashboard">
-  <!-- ===== STATS CARDS ===== -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-    <div class="card p-6 flex items-start gap-4">
-      <div class="p-3 rounded-lg bg-[#f3f4f6] text-[#6b7280]">
-        <DollarSign class="w-5 h-5" />
-      </div>
-      <div>
-        <p class="text-sm text-[#6b7280] uppercase tracking-wider">Revenue</p>
-        <p class="text-2xl font-light">${totalRevenue.toLocaleString()}</p>
-      </div>
-    </div>
 
-    <div class="card p-6 flex items-start gap-4">
-      <div class="p-3 rounded-lg bg-[#f3f4f6] text-[#6b7280]">
-        <CalendarDays class="w-5 h-5" />
+  <!-- ── 4 Stat Cards ── -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+    {stats.map(({ label, value, icon: Icon }) => (
+      <div class="bg-white border border-[#e5e7eb] rounded-xl p-4 shadow-sm flex items-center gap-3">
+        <div class="p-2 rounded-lg bg-[#f3f4f6] shrink-0">
+          <Icon className="w-4 h-4 text-[#6b7280]" />
+        </div>
+        <div class="min-w-0">
+          <p class="text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]">{label}</p>
+          <p class="text-xl font-light text-[#111827] leading-tight">{value}</p>
+        </div>
       </div>
-      <div>
-        <p class="text-sm text-[#6b7280] uppercase tracking-wider">Bookings</p>
-        <p class="text-2xl font-light">{totalBookings}</p>
-      </div>
-    </div>
-
-    <div class="card p-6 flex items-start gap-4">
-      <div class="p-3 rounded-lg bg-[#f3f4f6] text-[#6b7280]">
-        <CalendarCheck class="w-5 h-5" />
-      </div>
-      <div>
-        <p class="text-sm text-[#6b7280] uppercase tracking-wider">Upcoming</p>
-        <p class="text-2xl font-light">{upcoming}</p>
-      </div>
-    </div>
-
-    <div class="card p-6 flex items-start gap-4">
-      <div class="p-3 rounded-lg bg-[#f3f4f6] text-[#6b7280]">
-        <QrCode class="w-5 h-5" />
-      </div>
-      <div>
-        <p class="text-sm text-[#6b7280] uppercase tracking-wider">QR Scans</p>
-        <p class="text-2xl font-light">{qrScans}</p>
-      </div>
-    </div>
+    ))}
   </div>
 
-  <!-- ===== CHARTS (placeholder – uncomment later) ===== -->
-  <!--
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-    <div class="card p-6">
-      <h3 class="text-sm uppercase tracking-wider text-[#6b7280] mb-4">Revenue by Month</h3>
-      <RevenueChart client:load data={monthlyRevenue} />
-    </div>
-    <div class="card p-6 flex flex-col items-center">
-      <h3 class="text-sm uppercase tracking-wider text-[#6b7280] mb-4">Booking Status</h3>
-      <StatusPie client:load />
-    </div>
-  </div>
-  -->
+  <!-- ── Row 1: Bar chart + Pie chart ── -->
+  <DashboardCharts monthly={monthly} statusCounts={statusCounts} revenueSlices={revenueSlices} client:load />
 
-  <!-- ===== RECENT BOOKINGS ===== -->
-  <div class="card p-6">
-    <h3 class="text-sm uppercase tracking-wider text-[#6b7280] mb-4">
-      Recent Bookings
-    </h3>
-    <table class="w-full text-sm">
-      <thead>
-        <tr class="border-b border-[#e5e7eb]/60">
-          <th class="text-left py-3 font-medium text-[#6b7280]">Account</th>
-          <th class="text-left py-3 font-medium text-[#6b7280]">Client</th>
-          <th class="text-left py-3 font-medium text-[#6b7280]">Event Date</th>
-          <th class="text-left py-3 font-medium text-[#6b7280]">Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        {
-          bookings.slice(0, 5).map((b: any) => (
-            <tr key={b._id} class="border-b border-[#e5e7eb]/30">
-              <td class="py-3 font-mono text-sm">{b.accountNumber}</td>
-              <td>{b.clientName}</td>
-              <td>{new Date(b.eventDate).toLocaleDateString()}</td>
-              <td>
-                <span
-                  class={`px-3 py-1 rounded-full text-xs font-medium ${
-                    b.paymentStatus === "paid"
-                      ? "badge-paid"
-                      : b.paymentStatus === "partial"
-                        ? "badge-partial"
-                        : "badge-unpaid"
-                  }`}
-                >
-                  {b.paymentStatus || "unpaid"}
-                </span>
-              </td>
-            </tr>
-          ))
-        }
-      </tbody>
-    </table>
+  <!-- ── Row 2: Recent Bookings + Today's Events ── -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+    <!-- Recent Bookings -->
+    <div class="bg-white border border-[#e5e7eb] rounded-xl shadow-sm overflow-hidden">
+      <div class="px-4 py-3 border-b border-[#e5e7eb] flex items-center justify-between">
+        <p class="text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]">Recent Bookings</p>
+        <a href="/admin" class="text-[0.65rem] text-[#6b7280] hover:text-[#111827] transition">View all →</a>
+      </div>
+      <ul class="divide-y divide-[#f3f4f6]">
+        {recentBookings.length === 0 ? (
+          <li class="py-8 text-center text-xs text-[#9ca3af]">No bookings yet.</li>
+        ) : recentBookings.map((b: any) => (
+          <li class="flex items-center justify-between px-4 py-2.5 hover:bg-[#fafafa] transition">
+            <div class="min-w-0">
+              <p class="text-sm font-medium text-[#111827] truncate">{b.clientName}</p>
+              <p class="text-[0.65rem] text-[#9ca3af]">{b.accountNumber} · {b.eventDate ? new Date(b.eventDate).toLocaleDateString() : '—'}</p>
+            </div>
+            <span class={`ml-3 shrink-0 px-2 py-0.5 rounded-full text-[0.6rem] font-medium border ${
+              b.paymentStatus === 'paid'    ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+              b.paymentStatus === 'partial' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                                             'bg-red-50 text-red-700 border-red-200'
+            }`}>
+              {b.paymentStatus || 'unpaid'}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    <!-- Today's Events -->
+    <div class="bg-white border border-[#e5e7eb] rounded-xl shadow-sm overflow-hidden">
+      <div class="px-4 py-3 border-b border-[#e5e7eb] flex items-center justify-between">
+        <p class="text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]">Today's Events</p>
+        <p class="text-[0.65rem] text-[#9ca3af]">{today.toLocaleDateString('default', { weekday: 'long', month: 'short', day: 'numeric' })}</p>
+      </div>
+      <ul class="divide-y divide-[#f3f4f6]">
+        {todayEvents.length === 0 ? (
+          <li class="py-8 text-center text-xs text-[#9ca3af]">No events scheduled for today.</li>
+        ) : todayEvents.map((b: any) => (
+          <li class="flex items-center gap-3 px-4 py-2.5 hover:bg-[#fafafa] transition">
+            <div class="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+            <div class="min-w-0">
+              <p class="text-sm font-medium text-[#111827] truncate">{b.clientName}</p>
+              <p class="text-[0.65rem] text-[#9ca3af] truncate">{b.eventType || 'Event'} · {b.accountNumber}</p>
+            </div>
+            <span class={`ml-auto shrink-0 px-2 py-0.5 rounded-full text-[0.6rem] font-medium border ${
+              b.paymentStatus === 'paid'    ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+              b.paymentStatus === 'partial' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                                             'bg-red-50 text-red-700 border-red-200'
+            }`}>
+              {b.paymentStatus || 'unpaid'}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+
   </div>
+
 </AdminLayout>
