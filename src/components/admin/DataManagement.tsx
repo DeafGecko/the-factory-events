@@ -65,9 +65,9 @@ const EntitySelect = ({ value, onChange }: { value: string; onChange: (v: string
 );
 
 export default function DataManagement() {
-  const [importEntity, setImportEntity] = useState('clients');
-  const [exportEntity, setExportEntity] = useState('clients');
-  const [deleteEntity, setDeleteEntity] = useState('clients');
+  const [importEntity, setImportEntity] = useState('bills');
+  const [exportEntity, setExportEntity] = useState('bills');
+  const [deleteEntity, setDeleteEntity] = useState('bills');
   const [file, setFile] = useState<File | null>(null);
   const [importing, setImporting] = useState(false);
   const [exporting, setExporting] = useState(false);
