@@ -121,10 +121,10 @@ export default function BillsTable({ initialBookings }: Props) {
   };
 
   return (
-    <div className="bg-white rounded-xl border border-[#e5e7eb] shadow-sm overflow-hidden">
+    <div className="bg-white rounded-xl border border-[#e5e7eb] shadow-sm flex flex-col max-h-[calc(100vh-13rem)]">
 
       {/* Toolbar */}
-      <div className="px-3 py-2.5 border-b border-[#e5e7eb] flex flex-wrap items-center justify-between gap-2">
+      <div className="px-3 py-2.5 border-b border-[#e5e7eb] flex flex-wrap items-center justify-between gap-2 shrink-0">
         <div className="flex-1" />
         <div className="flex items-center gap-3 text-xs">
           <span className="text-emerald-600 font-medium">{counts.paid} paid</span>
@@ -149,9 +149,9 @@ export default function BillsTable({ initialBookings }: Props) {
       )}
 
       {/* Table */}
-      <div className="overflow-x-auto">
+      <div className="flex-1 overflow-auto">
         <table className="w-full">
-          <thead>
+          <thead className="sticky top-0 z-10">
             <tr className="bg-[#f9fafb] border-b border-[#e5e7eb]">
               {['Account', 'Client', 'Date', 'Total', 'Paid', 'Balance', 'Status', 'Actions'].map(h => (
                 <th key={h} className={`text-left px-3 py-2 text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]
@@ -241,7 +241,7 @@ export default function BillsTable({ initialBookings }: Props) {
       </div>
 
       {/* Footer */}
-      <div className="px-4 py-2 border-t border-[#e5e7eb] flex items-center justify-between text-xs text-[#9ca3af]">
+      <div className="px-4 py-2 border-t border-[#e5e7eb] flex items-center justify-between text-xs text-[#9ca3af] shrink-0">
         <span>{bookings.length} record{bookings.length !== 1 ? 's' : ''}</span>
         <span>Outstanding: <strong className="text-red-600">${totalOutstanding.toFixed(2)}</strong></span>
       </div>

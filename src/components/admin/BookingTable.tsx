@@ -1,6 +1,7 @@
 // src/components/admin/BookingTable.tsx
 import { useState, useMemo } from 'react';
 import { Search, Inbox, Trash2, Edit, X, Plus } from 'lucide-react';
+import CustomSelect from './CustomSelect';
 
 interface Booking {
   _id: string;
@@ -26,17 +27,19 @@ interface Props { initialBookings: Booking[]; }
 const statusStyle = (s: string) =>
   s === 'paid'    ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
   s === 'partial' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+  s === 'owe'     ? 'bg-blue-50 text-blue-700 border-blue-200' :
                     'bg-red-50 text-red-700 border-red-200';
 
 const dotColor = (s: string) =>
   s === 'paid'    ? 'bg-emerald-500' :
   s === 'partial' ? 'bg-amber-500' :
+  s === 'owe'     ? 'bg-blue-500' :
                     'bg-red-500';
 
 const statusLabel = (s: string) =>
-  s === 'paid' ? 'Paid' : s === 'partial' ? 'Partial' : 'Unpaid';
+  s === 'paid' ? 'Paid' : s === 'partial' ? 'Partial' : s === 'owe' ? 'Owes Refund' : 'Unpaid';
 
-const FILTERS = ['all', 'paid', 'partial', 'unpaid'] as const;
+const FILTERS = ['all', 'paid', 'partial', 'unpaid', 'owe'] as const;
 
 const EMPTY_FORM = {
   clientName: '', email: '', phone: '',
@@ -53,11 +56,6 @@ const Input = (props: React.InputHTMLAttributes<HTMLInputElement>) => (
   <input {...props} className={`w-full border border-[#e5e7eb] rounded-md px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151] ${props.className || ''}`} />
 );
 
-const Select = ({ children, ...props }: React.SelectHTMLAttributes<HTMLSelectElement>) => (
-  <select {...props} className={`w-full border border-[#e5e7eb] rounded-md px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151] bg-white ${props.className || ''}`}>
-    {children}
-  </select>
-);
 
 export default function BookingTable({ initialBookings }: Props) {
   const [bookings, setBookings] = useState(initialBookings);
@@ -72,13 +70,21 @@ export default function BookingTable({ initialBookings }: Props) {
   const [saving, setSaving]       = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
+  const deriveStatus = (b: Booking) => {
+    const paid = b.amountPaid || 0;
+    const total = b.totalPrice || 0;
+    if (paid > total && total > 0) return 'owe';
+    return b.paymentStatus || 'unpaid';
+  };
+
   const filtered = useMemo(() =>
     bookings.filter((b) => {
       const q = search.toLowerCase();
       const matchSearch = b.clientName.toLowerCase().includes(q) ||
         (b.accountNumber || '').toLowerCase().includes(q) ||
         b.email.toLowerCase().includes(q);
-      const matchFilter = filter === 'all' || b.paymentStatus === filter ||
+      const effectiveStatus = deriveStatus(b);
+      const matchFilter = filter === 'all' || effectiveStatus === filter ||
         (filter === 'unpaid' && !b.paymentStatus);
       return matchSearch && matchFilter;
     }), [bookings, search, filter]);
@@ -110,9 +116,10 @@ export default function BookingTable({ initialBookings }: Props) {
   const toggleOne   = (id: string) => setSelectedIds(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
 
   const counts = {
-    paid:    bookings.filter(b => b.paymentStatus === 'paid').length,
-    partial: bookings.filter(b => b.paymentStatus === 'partial').length,
-    unpaid:  bookings.filter(b => b.paymentStatus !== 'paid' && b.paymentStatus !== 'partial').length,
+    paid:    bookings.filter(b => deriveStatus(b) === 'paid').length,
+    partial: bookings.filter(b => deriveStatus(b) === 'partial').length,
+    unpaid:  bookings.filter(b => deriveStatus(b) === 'unpaid').length,
+    owe:     bookings.filter(b => deriveStatus(b) === 'owe').length,
   };
 
   const openModal = () => { setFormData({ ...EMPTY_FORM }); setFormError(null); setShowModal(true); };
@@ -146,10 +153,10 @@ export default function BookingTable({ initialBookings }: Props) {
 
   return (
     <>
-    <div className="bg-white border border-[#e5e7eb] rounded-xl shadow-sm overflow-hidden">
+    <div className="bg-white border border-[#e5e7eb] rounded-xl shadow-sm flex flex-col max-h-[calc(100vh-13rem)]">
 
       {/* Toolbar */}
-      <div className="px-3 py-2 border-b border-[#e5e7eb] flex items-center gap-2">
+      <div className="px-3 py-2 border-b border-[#e5e7eb] flex items-center gap-2 shrink-0">
         <div className="relative flex-1 min-w-36">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9ca3af]" />
           <input type="search" placeholder="Search name, account, email…" value={search}
@@ -165,6 +172,7 @@ export default function BookingTable({ initialBookings }: Props) {
               {f === 'all' ? `All (${bookings.length})` :
                f === 'paid' ? `Paid (${counts.paid})` :
                f === 'partial' ? `Partial (${counts.partial})` :
+               f === 'owe' ? `Owes Refund (${counts.owe})` :
                `Unpaid (${counts.unpaid})`}
             </button>
           ))}
@@ -184,9 +192,9 @@ export default function BookingTable({ initialBookings }: Props) {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto">
+      <div className="flex-1 overflow-auto">
         <table className="w-full">
-          <thead>
+          <thead className="sticky top-0 z-10">
             <tr className="bg-[#f9fafb] border-b border-[#e5e7eb]">
               <th className="px-3 py-2 w-8">
                 <input type="checkbox" title="Select all" checked={allSelected} onChange={toggleAll}
@@ -227,9 +235,9 @@ export default function BookingTable({ initialBookings }: Props) {
                 <td className="px-3 py-2 text-xs text-[#6b7280] hidden sm:table-cell">{b.guestCount}</td>
                 <td className="px-3 py-2 text-xs font-medium text-[#111827] hidden md:table-cell">${(b.totalPrice || 0).toFixed(2)}</td>
                 <td className="px-3 py-2">
-                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.6rem] font-medium border ${statusStyle(b.paymentStatus)}`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${dotColor(b.paymentStatus)}`} />
-                    {statusLabel(b.paymentStatus)}
+                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.6rem] font-medium border ${statusStyle(deriveStatus(b))}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${dotColor(deriveStatus(b))}`} />
+                    {statusLabel(deriveStatus(b))}
                   </span>
                 </td>
                 <td className="px-3 py-2">
@@ -251,7 +259,7 @@ export default function BookingTable({ initialBookings }: Props) {
       </div>
 
       {/* Footer */}
-      <div className="px-4 py-2 border-t border-[#e5e7eb] flex items-center justify-between gap-3 text-xs text-[#9ca3af]">
+      <div className="px-4 py-2 border-t border-[#e5e7eb] flex items-center justify-between gap-3 text-xs text-[#9ca3af] shrink-0">
         <span>Showing <strong className="text-[#374151]">{filtered.length}</strong> of <strong className="text-[#374151]">{bookings.length}</strong></span>
         <div className="flex items-center gap-3">
           {([['bg-emerald-500', 'Paid', counts.paid], ['bg-amber-500', 'Partial', counts.partial], ['bg-red-500', 'Unpaid', counts.unpaid]] as const).map(([color, label, count]) => (
@@ -314,28 +322,30 @@ export default function BookingTable({ initialBookings }: Props) {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Booking Type</Label>
-                <Select name="bookingType" value={formData.bookingType} onChange={handleChange}>
-                  <option value="party">Party / Event</option>
-                  <option value="lease">Lease / Rental</option>
-                  <option value="market-booth">Farm Market Booth</option>
-                </Select>
+                <CustomSelect value={formData.bookingType} onChange={v => setFormData(p => ({ ...p, bookingType: v }))}
+                  options={[
+                    { value: 'party', label: 'Party / Event' },
+                    { value: 'lease', label: 'Lease / Rental' },
+                    { value: 'market-booth', label: 'Farm Market Booth' },
+                  ]} />
               </div>
               <div>
                 <Label>Event Type</Label>
-                <Select name="eventType" value={formData.eventType} onChange={handleChange}>
-                  <option value="wedding">Wedding</option>
-                  <option value="corporate">Corporate</option>
-                  <option value="birthday">Birthday</option>
-                  <option value="party">Party</option>
-                  <option value="graduation">Graduation</option>
-                  <option value="shower">Baby/Bridal Shower</option>
-                  <option value="concert">Concert / Show</option>
-                  <option value="holiday">Holiday Event</option>
-                  <option value="farm-market">Farm Market</option>
-                  <option value="tenant">Tenant</option>
-                  <option value="venue-rental">Venue Rental</option>
-                  <option value="other">Other</option>
-                </Select>
+                <CustomSelect value={formData.eventType} onChange={v => setFormData(p => ({ ...p, eventType: v }))}
+                  options={[
+                    { value: 'wedding', label: 'Wedding' },
+                    { value: 'corporate', label: 'Corporate' },
+                    { value: 'birthday', label: 'Birthday' },
+                    { value: 'party', label: 'Party' },
+                    { value: 'graduation', label: 'Graduation' },
+                    { value: 'shower', label: 'Baby/Bridal Shower' },
+                    { value: 'concert', label: 'Concert / Show' },
+                    { value: 'holiday', label: 'Holiday Event' },
+                    { value: 'farm-market', label: 'Farm Market' },
+                    { value: 'tenant', label: 'Tenant' },
+                    { value: 'venue-rental', label: 'Venue Rental' },
+                    { value: 'other', label: 'Other' },
+                  ]} />
               </div>
             </div>
 
@@ -362,11 +372,12 @@ export default function BookingTable({ initialBookings }: Props) {
 
             <div>
               <Label>Payment Status</Label>
-              <Select name="paymentStatus" value={formData.paymentStatus} onChange={handleChange}>
-                <option value="unpaid">Unpaid</option>
-                <option value="partial">Partial</option>
-                <option value="paid">Paid</option>
-              </Select>
+              <CustomSelect value={formData.paymentStatus} onChange={v => setFormData(p => ({ ...p, paymentStatus: v }))}
+                options={[
+                  { value: 'unpaid', label: 'Unpaid' },
+                  { value: 'partial', label: 'Partial' },
+                  { value: 'paid', label: 'Paid' },
+                ]} />
             </div>
 
             <div>

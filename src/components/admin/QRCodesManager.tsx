@@ -16,6 +16,7 @@ interface QREntry {
   booking_id: string;
   token: string;
   created_at: number;
+  deadline: number | null;
   rsvp_count: number;
   total_guests: number;
   booking: Booking | null;
@@ -40,6 +41,7 @@ export default function QRCodesManager() {
   const [rsvps, setRsvps] = useState<Record<string, RSVP[]>>({});
   const [copied, setCopied] = useState<string | null>(null);
   const [bookingSearch, setBookingSearch] = useState('');
+  const [deadline, setDeadline] = useState('');
   const qrCanvasRefs = useRef<Record<string, HTMLCanvasElement | null>>({});
 
   const fetchAll = async () => {
@@ -84,9 +86,9 @@ export default function QRCodesManager() {
       const res = await fetch('/api/admin/event-qr', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bookingId: match._id }),
+        body: JSON.stringify({ bookingId: match._id, deadline: deadline || match.eventDate }),
       });
-      if (res.ok) { await fetchAll(); setBookingSearch(''); }
+      if (res.ok) { await fetchAll(); setBookingSearch(''); setDeadline(''); }
       else { const d = await res.json(); alert(d.error); }
     } finally { setGenerating(false); }
   };
@@ -157,9 +159,9 @@ export default function QRCodesManager() {
 
       {/* Generate panel */}
       <div className="bg-white rounded-xl border border-[#e5e7eb] shadow-sm p-4">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <QrCode className="w-4 h-4 text-[#6b7280] shrink-0" />
-          <div className="relative flex-1">
+          <div className="relative flex-1 min-w-36">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9ca3af]" />
             <input
               type="text"
@@ -167,6 +169,16 @@ export default function QRCodesManager() {
               value={bookingSearch}
               onChange={e => setBookingSearch(e.target.value)}
               className="h-8 w-full pl-8 pr-3 border border-[#e5e7eb] rounded-md text-xs bg-white focus:outline-none focus:ring-1 focus:ring-[#374151]"
+            />
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <label className="text-[0.6rem] text-[#9ca3af] uppercase tracking-wider whitespace-nowrap">RSVP Deadline</label>
+            <input
+              type="date"
+              title="RSVP deadline"
+              value={deadline}
+              onChange={e => setDeadline(e.target.value)}
+              className="h-8 px-2 border border-[#e5e7eb] rounded-md text-xs bg-white focus:outline-none focus:ring-1 focus:ring-[#374151]"
             />
           </div>
           <button
@@ -179,8 +191,9 @@ export default function QRCodesManager() {
             {generating ? 'Generating…' : 'Generate QR'}
           </button>
         </div>
+        <p className="text-[0.65rem] text-[#9ca3af] mt-2">Deadline defaults to the event date if not set. Guests cannot RSVP after the deadline.</p>
         {availableBookings.length === 0 && bookings.length > 0 && (
-          <p className="text-xs text-[#9ca3af] mt-2">All bookings already have a QR code.</p>
+          <p className="text-xs text-[#9ca3af] mt-1">All bookings already have a QR code.</p>
         )}
       </div>
 
@@ -196,9 +209,13 @@ export default function QRCodesManager() {
             const rsvpList = rsvps[qr.token] || [];
             const isOpen = expanded === qr.token;
             const rsvpUrl = `${BASE_URL}/rsvp/${qr.token}`;
+            const isExpired = qr.deadline ? Math.floor(Date.now() / 1000) > qr.deadline : false;
+            const deadlineLabel = qr.deadline
+              ? new Date(qr.deadline * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+              : null;
 
             return (
-              <div key={qr.id} className="bg-white rounded-xl border border-[#e5e7eb] shadow-sm overflow-hidden">
+              <div key={qr.id} className={`bg-white rounded-xl border shadow-sm overflow-hidden ${isExpired ? 'border-[#f3f4f6] opacity-60' : 'border-[#e5e7eb]'}`}>
                 {/* QR card header */}
                 <div className="p-4 flex gap-4 flex-wrap">
                   {/* QR canvas */}
@@ -224,7 +241,13 @@ export default function QRCodesManager() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <p className="text-sm font-semibold text-[#111827]">{qr.booking?.clientName || 'Unknown Booking'}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-semibold text-[#111827]">{qr.booking?.clientName || 'Unknown Booking'}</p>
+                          {isExpired
+                            ? <span className="px-1.5 py-0.5 rounded text-[0.6rem] font-semibold bg-red-50 text-red-600 border border-red-200">Expired</span>
+                            : deadlineLabel && <span className="px-1.5 py-0.5 rounded text-[0.6rem] font-medium bg-[#f3f4f6] text-[#6b7280]">Deadline {deadlineLabel}</span>
+                          }
+                        </div>
                         <p className="text-xs text-[#6b7280] mt-0.5">
                           {qr.booking?.eventType && <span className="capitalize">{qr.booking.eventType} · </span>}
                           {formatDate(qr.booking?.eventDate || '')}

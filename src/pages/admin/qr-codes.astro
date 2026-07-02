@@ -3,10 +3,6 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 import QRCodesManager from '../../components/admin/QRCodesManager';
 ---
 
-<AdminLayout title="QR Codes">
-  <div class="mb-4">
-    <h2 class="text-xl font-light tracking-wide">QR Codes</h2>
-    <p class="text-sm text-[#9ca3af]">Generate RSVP QR codes for events — guests scan to register and you get a live headcount for catering.</p>
-  </div>
+<AdminLayout title="RSVP Management" subtitle="QR and link-based registration with live catering counts.">
   <QRCodesManager client:load />
 </AdminLayout>

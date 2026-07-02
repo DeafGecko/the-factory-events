@@ -3,10 +3,6 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 import DataManagement from '../../components/admin/DataManagement';
 ---
 
-<AdminLayout title="Data Management">
-  <div class="mb-6">
-    <h2 class="text-xl font-light tracking-wide">Data Management</h2>
-    <p class="text-sm text-[#8e8e93]">Import, export, and manage your venue data in bulk.</p>
-  </div>
+<AdminLayout title="Data Management" subtitle="Import, export, and manage your venue data in bulk.">
   <DataManagement client:load />
 </AdminLayout>

@@ -12,7 +12,7 @@ export const GET: APIRoute = async ({ locals }) => {
   if (!DB) return new Response(JSON.stringify({ error: 'DB unavailable' }), { status: 500 });
 
   const rows = await DB.prepare(
-    `SELECT q.id, q.booking_id, q.token, q.created_at,
+    `SELECT q.id, q.booking_id, q.token, q.created_at, q.deadline,
        COUNT(r.id) as rsvp_count,
        COALESCE(SUM(r.party_size), 0) as total_guests
      FROM event_qr_codes q
@@ -40,8 +40,15 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const DB = (locals as any).runtime?.env?.DB;
   if (!DB) return new Response(JSON.stringify({ error: 'DB unavailable' }), { status: 500 });
 
-  const { bookingId } = await request.json();
+  const { bookingId, deadline } = await request.json();
   if (!bookingId) return new Response(JSON.stringify({ error: 'bookingId required' }), { status: 400 });
+
+  // deadline is an ISO date string (YYYY-MM-DD); store as unix timestamp (end of that day)
+  let deadlineTs: number | null = null;
+  if (deadline) {
+    const d = new Date(deadline + 'T23:59:59Z');
+    if (!isNaN(d.getTime())) deadlineTs = Math.floor(d.getTime() / 1000);
+  }
 
   // One QR per booking — return existing if already created
   const existing = await DB.prepare(
@@ -52,10 +59,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const id = crypto.randomUUID();
   const token = randomToken();
   await DB.prepare(
-    `INSERT INTO event_qr_codes (id, booking_id, token, created_at) VALUES (?, ?, ?, unixepoch())`
-  ).bind(id, bookingId, token).run();
+    `INSERT INTO event_qr_codes (id, booking_id, token, created_at, deadline) VALUES (?, ?, ?, unixepoch(), ?)`
+  ).bind(id, bookingId, token, deadlineTs).run();
 
-  return new Response(JSON.stringify({ id, booking_id: bookingId, token }), {
+  return new Response(JSON.stringify({ id, booking_id: bookingId, token, deadline: deadlineTs }), {
     status: 201, headers: { 'Content-Type': 'application/json' },
   });
 };

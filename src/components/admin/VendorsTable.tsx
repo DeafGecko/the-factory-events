@@ -78,8 +78,8 @@ export default function VendorsTable() {
 
   return (
     <>
-      <div className="bg-white border border-[#e5e7eb] rounded-xl shadow-sm overflow-hidden">
-        <div className="px-3 py-2 border-b border-[#e5e7eb] flex items-center gap-2 flex-wrap">
+      <div className="bg-white border border-[#e5e7eb] rounded-xl shadow-sm flex flex-col max-h-[calc(100vh-13rem)]">
+        <div className="px-3 py-2 border-b border-[#e5e7eb] flex items-center gap-2 flex-wrap shrink-0">
           <div className="relative flex-1 min-w-40">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9ca3af]" />
             <input type="search" placeholder="Search vendors…" value={search} onChange={e => setSearch(e.target.value)}
@@ -93,9 +93,9 @@ export default function VendorsTable() {
 
         {error && <div className="px-4 py-2 bg-red-50 text-red-700 text-xs border-b border-red-200">{error}</div>}
 
-        <div className="overflow-x-auto">
+        <div className="flex-1 overflow-auto">
           <table className="w-full">
-            <thead>
+            <thead className="sticky top-0 z-10">
               <tr className="bg-[#f9fafb] border-b border-[#e5e7eb]">
                 {['Account #', 'Name', 'Contact', 'Service', 'Email', 'Phone', 'Actions'].map(h => (
                   <th key={h} className="text-left px-3 py-2 text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]">{h}</th>

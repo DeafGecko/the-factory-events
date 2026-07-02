@@ -3,10 +3,6 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 import VendorsTable from '../../components/admin/VendorsTable';
 ---
 
-<AdminLayout title="Vendors">
-  <div class="mb-5">
-    <h2 class="text-xl font-light tracking-wide">Vendors</h2>
-    <p class="text-sm text-[#8e8e93]">Manage vendor contacts and service providers.</p>
-  </div>
+<AdminLayout title="Vendors" subtitle="Manage vendor contacts and service providers.">
   <VendorsTable client:load />
 </AdminLayout>

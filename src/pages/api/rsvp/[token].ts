@@ -24,7 +24,9 @@ export const GET: APIRoute = async ({ params, locals }) => {
 
   if (!booking) return new Response(JSON.stringify({ error: 'Event not found' }), { status: 404 });
 
-  return new Response(JSON.stringify({ token, booking }), {
+  const expired = qr.deadline ? Math.floor(Date.now() / 1000) > qr.deadline : false;
+
+  return new Response(JSON.stringify({ token, booking, expired, deadline: qr.deadline ?? null }), {
     headers: { 'Content-Type': 'application/json' },
   });
 };
@@ -38,6 +40,10 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
     `SELECT * FROM event_qr_codes WHERE token = ?`
   ).bind(token).first();
   if (!qr) return new Response(JSON.stringify({ error: 'Invalid link' }), { status: 404 });
+
+  if (qr.deadline && Math.floor(Date.now() / 1000) > qr.deadline) {
+    return new Response(JSON.stringify({ error: 'RSVP deadline has passed for this event.' }), { status: 410 });
+  }
 
   const { guestName, partySize, notes } = await request.json();
   if (!guestName?.trim()) return new Response(JSON.stringify({ error: 'Name is required' }), { status: 400 });

@@ -1,6 +1,7 @@
 // src/components/admin/StaffTable.tsx
 import { useState } from 'react';
 import { Plus, X, Search, Pencil, Trash2, RefreshCw, Phone, Mail } from 'lucide-react';
+import CustomSelect from './CustomSelect';
 
 interface StaffMember {
   _id: string;
@@ -34,9 +35,6 @@ const Label = ({ children }: { children: React.ReactNode }) => (
 );
 const Input = (p: React.InputHTMLAttributes<HTMLInputElement>) => (
   <input {...p} className={`w-full border border-[#e5e7eb] rounded-md px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151] ${p.className ?? ''}`} />
-);
-const Select = ({ children, ...p }: React.SelectHTMLAttributes<HTMLSelectElement>) => (
-  <select {...p} className="w-full border border-[#e5e7eb] rounded-md px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151] bg-white">{children}</select>
 );
 
 const statusStyle: Record<string, string> = {
@@ -138,10 +136,10 @@ export default function StaffTable() {
 
   return (
     <>
-      <div className="bg-white border border-[#e5e7eb] rounded-xl shadow-sm overflow-hidden">
+      <div className="bg-white border border-[#e5e7eb] rounded-xl shadow-sm flex flex-col max-h-[calc(100vh-13rem)]">
 
         {/* Toolbar */}
-        <div className="px-3 py-2 border-b border-[#e5e7eb] flex items-center gap-2 flex-wrap">
+        <div className="px-3 py-2 border-b border-[#e5e7eb] flex items-center gap-2 flex-wrap shrink-0">
           <div className="relative flex-1 min-w-36">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9ca3af]" />
             <input type="search" placeholder="Search name, email, department…" value={search}
@@ -166,7 +164,7 @@ export default function StaffTable() {
         </div>
 
         {/* Status summary */}
-        <div className="px-4 py-1.5 border-b border-[#f3f4f6] flex items-center gap-4 text-xs">
+        <div className="px-4 py-1.5 border-b border-[#f3f4f6] flex items-center gap-4 text-xs shrink-0">
           <span className="text-emerald-600 font-medium">{counts.active} active</span>
           <span className="text-amber-600 font-medium">{counts['on-call']} on-call</span>
           <span className="text-[#9ca3af]">{counts.inactive} inactive</span>
@@ -175,9 +173,9 @@ export default function StaffTable() {
         {error && <div className="px-4 py-2 bg-red-50 text-red-700 text-xs border-b border-red-200">{error}</div>}
 
         {/* Table */}
-        <div className="overflow-x-auto">
+        <div className="flex-1 overflow-auto">
           <table className="w-full">
-            <thead>
+            <thead className="sticky top-0 z-10">
               <tr className="bg-[#f9fafb] border-b border-[#e5e7eb]">
                 {['Account #', 'Name', 'Role', 'Department', 'Contact', 'Schedule', 'Shift', 'Status', 'Actions'].map(h => (
                   <th key={h} className={`text-left px-3 py-2 text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]
@@ -242,7 +240,7 @@ export default function StaffTable() {
         </div>
 
         {/* Footer */}
-        <div className="px-4 py-2 border-t border-[#e5e7eb] text-xs text-[#9ca3af]">
+        <div className="px-4 py-2 border-t border-[#e5e7eb] text-xs text-[#9ca3af] shrink-0">
           Showing <strong className="text-[#374151]">{filtered.length}</strong> of <strong className="text-[#374151]">{staff.length}</strong> staff members
         </div>
       </div>
@@ -283,9 +281,8 @@ export default function StaffTable() {
                 <div><Label>Full Name *</Label><Input required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Jane Smith" /></div>
                 <div>
                   <Label>Role</Label>
-                  <Select value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}>
-                    {ROLES.map(r => <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>)}
-                  </Select>
+                  <CustomSelect value={form.role as string} onChange={v => setForm({ ...form, role: v as StaffMember['role'] })}
+                    options={ROLES.map(r => ({ value: r, label: r.charAt(0).toUpperCase() + r.slice(1) }))} />
                 </div>
               </div>
 
@@ -303,17 +300,17 @@ export default function StaffTable() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label>Status</Label>
-                  <Select value={form.status} onChange={e => setForm({ ...form, status: e.target.value as StaffMember['status'] })}>
-                    <option value="active">Active</option>
-                    <option value="on-call">On-Call</option>
-                    <option value="inactive">Inactive</option>
-                  </Select>
+                  <CustomSelect value={form.status as string} onChange={v => setForm({ ...form, status: v as StaffMember['status'] })}
+                    options={[
+                      { value: 'active', label: 'Active' },
+                      { value: 'on-call', label: 'On-Call' },
+                      { value: 'inactive', label: 'Inactive' },
+                    ]} />
                 </div>
                 <div>
                   <Label>Schedule Type</Label>
-                  <Select value={form.scheduleType} onChange={e => setForm({ ...form, scheduleType: e.target.value })}>
-                    {SCHEDULE_TYPES.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
-                  </Select>
+                  <CustomSelect value={form.scheduleType as string} onChange={v => setForm({ ...form, scheduleType: v })}
+                    options={SCHEDULE_TYPES.map(s => ({ value: s, label: s.charAt(0).toUpperCase() + s.slice(1) }))} />
                 </div>
               </div>
 

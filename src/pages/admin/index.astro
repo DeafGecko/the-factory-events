@@ -29,13 +29,6 @@ const bookings = await sanityClient.fetch(`
 `);
 ---
 
-<AdminLayout title="Bookings">
-  <section>
-    <header class="mb-4">
-      <h2 class="text-xl font-light tracking-wide">All Bookings</h2>
-      <p class="text-sm text-[#6b7280]">{bookings.length} total bookings</p>
-    </header>
-
-    <BookingTable client:load initialBookings={bookings} />
-  </section>
+<AdminLayout title="Bookings" subtitle={`${bookings.length} total bookings`}>
+  <BookingTable client:load initialBookings={bookings} />
 </AdminLayout>
