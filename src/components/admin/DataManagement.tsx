@@ -1,6 +1,6 @@
 // src/components/admin/DataManagement.tsx
 import { useState } from 'react';
-import { Upload, Download, FileDown, AlertCircle, CheckCircle, Trash2, Database } from 'lucide-react';
+import { Upload, Download, AlertCircle, CheckCircle, Trash2, Database } from 'lucide-react';
 import CustomSelect from './CustomSelect';
 
 interface ImportStats {
@@ -27,15 +27,6 @@ const ENTITY_TYPES = [
   { value: 'waitlist', label: 'Waitlist' },
 ];
 
-const TEMPLATES: Record<string, string> = {
-  bills:    'client_email,amount,paid,status\njane@example.com,1500,1500,paid',
-  bookings: 'client_name,email,phone,event_date,event_type,guest_count,space_code,total_price,payment_status\nJohn Doe,john@example.com,555-1234,2026-07-15,wedding,100,P089,1500,paid',
-  clients:  'name,email,phone,address,company\nJane Doe,jane@example.com,555-1234,123 Main St,Acme Corp',
-  staff:    'name,email,phone,role,status,schedule_type\nJane Smith,jane@example.com,555-9999,manager,active,full-time',
-  tenants:  'name,email,phone,lease_start,lease_end,unit\nBob Tenant,bob@example.com,555-1111,2026-01-01,2026-12-31,A101',
-  vendors:  'name,contact,email,phone,service_type\nCatering Co.,Maria,maria@catering.com,555-3333,catering',
-  waitlist: 'name,email,phone,event_type,date,guests,status\nJohn Doe,john@example.com,555-1234,wedding,2026-07-15,100,pending',
-};
 
 function addLog(log: LogEntry[], entry: Omit<LogEntry, 'id' | 'date'>): LogEntry[] {
   return [{ ...entry, id: crypto.randomUUID(), date: new Date().toISOString() }, ...log].slice(0, 50);
@@ -70,17 +61,6 @@ export default function DataManagement() {
   const [deleting, setDeleting] = useState(false);
   const [log, setLog] = useState<LogEntry[]>([]);
 
-  const downloadTemplate = (entity: string) => {
-    const content = TEMPLATES[entity] || '';
-    const blob = new Blob([content], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${entity}_template.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-    setLog((prev) => addLog(prev, { action: 'export', entity, detail: `Downloaded ${entity} template` }));
-  };
 
   const handleImport = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -155,6 +135,7 @@ export default function DataManagement() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
         {/* ── Import ── */}
+
         <SectionCard>
           <CardTitle icon={Upload}>Import CSV</CardTitle>
           <form onSubmit={handleImport} className="space-y-3">
@@ -204,49 +185,29 @@ export default function DataManagement() {
           </div>
         </SectionCard>
 
-        {/* ── Templates ── */}
+        {/* ── Bulk Delete ── */}
         <SectionCard>
-          <CardTitle icon={FileDown}>Templates</CardTitle>
-          <p className="text-[0.65rem] text-[#9ca3af] mb-2">Download a pre-formatted CSV template.</p>
-          <ul className="space-y-0.5 max-h-48 overflow-y-auto pr-0.5">
-            {ENTITY_TYPES.map((t) => (
-              <li key={t.value}>
-                <button
-                  type="button"
-                  onClick={() => downloadTemplate(t.value)}
-                  className="w-full text-left flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs text-[#374151] hover:bg-[#f3f4f6] transition"
-                >
-                  <span>{t.label}</span>
-                  <FileDown className="w-3 h-3 text-[#9ca3af]" />
-                </button>
-              </li>
-            ))}
-          </ul>
+          <CardTitle icon={Trash2}>Bulk Delete</CardTitle>
+          <div className="space-y-3">
+            <EntitySelect value={deleteEntity} onChange={(v) => { setDeleteEntity(v); setDeleteConfirm(false); }} />
+            {deleteConfirm ? (
+              <div className="space-y-2">
+                <p className="text-xs text-red-600 font-medium">Delete all {deleteEntity}? This cannot be undone.</p>
+                <div className="flex gap-2">
+                  <button onClick={handleBulkDelete} disabled={deleting} className="flex-1 h-8 px-3 rounded-md bg-red-600 text-white text-xs hover:bg-red-700 disabled:opacity-50 transition">
+                    {deleting ? 'Deleting…' : 'Confirm Delete'}
+                  </button>
+                  <button onClick={() => setDeleteConfirm(false)} className="h-8 px-3 rounded-md border border-[#e5e7eb] text-xs hover:bg-[#f3f4f6] transition">Cancel</button>
+                </div>
+              </div>
+            ) : (
+              <button onClick={handleBulkDelete} className="w-full h-8 flex items-center justify-center gap-1.5 px-3 rounded-md border border-red-200 text-red-600 text-sm hover:bg-red-50 transition">
+                <Trash2 className="w-3.5 h-3.5" /> Bulk Delete
+              </button>
+            )}
+          </div>
         </SectionCard>
       </div>
-
-      {/* ── Bulk Delete ── */}
-      <SectionCard>
-        <CardTitle icon={Trash2}>Bulk Delete</CardTitle>
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="w-48">
-            <EntitySelect value={deleteEntity} onChange={(v) => { setDeleteEntity(v); setDeleteConfirm(false); }} />
-          </div>
-          {deleteConfirm ? (
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-red-600 font-medium">Delete all {deleteEntity}? This cannot be undone.</span>
-              <button onClick={handleBulkDelete} disabled={deleting} className="h-8 px-3 rounded-md bg-red-600 text-white text-xs hover:bg-red-700 disabled:opacity-50 transition">
-                {deleting ? 'Deleting…' : 'Confirm Delete'}
-              </button>
-              <button onClick={() => setDeleteConfirm(false)} className="h-8 px-3 rounded-md border border-[#e5e7eb] text-xs hover:bg-[#f3f4f6] transition">Cancel</button>
-            </div>
-          ) : (
-            <button onClick={handleBulkDelete} className="h-8 flex items-center gap-1.5 px-3 rounded-md border border-red-200 text-red-600 text-sm hover:bg-red-50 transition">
-              <Trash2 className="w-3.5 h-3.5" /> Bulk Delete
-            </button>
-          )}
-        </div>
-      </SectionCard>
 
       {/* ── Migration Log ── */}
       <SectionCard>
