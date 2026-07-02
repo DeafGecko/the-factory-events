@@ -18,23 +18,31 @@ interface LogEntry {
 }
 
 const ENTITY_TYPES = [
-  { value: 'clients',  label: 'Clients' },
-  { value: 'vendors',  label: 'Vendors' },
-  { value: 'tenants',  label: 'Tenants' },
-  { value: 'bookings', label: 'Bookings' },
-  { value: 'spaces',   label: 'Spaces' },
-  { value: 'bills',    label: 'Bills / Payments' },
-  { value: 'waitlist', label: 'Waitlist' },
+  { value: 'bills',       label: 'Bills / Payments' },
+  { value: 'bookings',    label: 'Bookings' },
+  { value: 'clients',     label: 'Clients' },
+  { value: 'equipment',   label: 'Equipment' },
+  { value: 'floor-plans', label: 'Floor Plans' },
+  { value: 'inventory',   label: 'Inventory' },
+  { value: 'maintenance', label: 'Maintenance' },
+  { value: 'staff',       label: 'Staff' },
+  { value: 'tenants',     label: 'Tenants' },
+  { value: 'vendors',     label: 'Vendors' },
+  { value: 'waitlist',    label: 'Waitlist' },
 ];
 
 const TEMPLATES: Record<string, string> = {
-  clients:  'name,email,phone,address,company\nJane Doe,jane@example.com,555-1234,123 Main St,Acme Corp',
-  vendors:  'name,contact,email,phone,service_type\nCatering Co.,Maria,maria@catering.com,555-3333,catering',
-  tenants:  'name,email,phone,lease_start,lease_end,unit\nBob Tenant,bob@example.com,555-1111,2026-01-01,2026-12-31,A101',
-  bookings: 'client_name,email,phone,event_date,event_type,guest_count,space_code,total_price,payment_status\nJohn Doe,john@example.com,555-1234,2026-07-15,wedding,100,P089,1500,paid',
-  spaces:   'code,name,type,capacity,is_available\nP001,Main Ballroom,party,120,true',
-  bills:    'client_email,amount,paid,status\njane@example.com,1500,1500,paid',
-  waitlist: 'name,email,phone,event_type,date,guests,status\nJohn Doe,john@example.com,555-1234,wedding,2026-07-15,100,pending',
+  bills:        'client_email,amount,paid,status\njane@example.com,1500,1500,paid',
+  bookings:     'client_name,email,phone,event_date,event_type,guest_count,space_code,total_price,payment_status\nJohn Doe,john@example.com,555-1234,2026-07-15,wedding,100,P089,1500,paid',
+  clients:      'name,email,phone,address,company\nJane Doe,jane@example.com,555-1234,123 Main St,Acme Corp',
+  equipment:    'name,category,serial_number,status,location,notes\nProjector,AV,SN-001,available,Main Hall,',
+  'floor-plans': 'code,name,type,capacity,is_available\nP001,Main Ballroom,party,120,true',
+  inventory:    'name,category,quantity,unit,reorder_level,location\nFolding Chairs,Furniture,200,pcs,20,Storage Room A',
+  maintenance:  'title,type,priority,assigned_to,scheduled_date,status,notes\nHVAC Inspection,preventive,medium,Facilities,2026-08-01,pending,',
+  staff:        'name,email,phone,role,status,schedule_type\nJane Smith,jane@example.com,555-9999,manager,active,full-time',
+  tenants:      'name,email,phone,lease_start,lease_end,unit\nBob Tenant,bob@example.com,555-1111,2026-01-01,2026-12-31,A101',
+  vendors:      'name,contact,email,phone,service_type\nCatering Co.,Maria,maria@catering.com,555-3333,catering',
+  waitlist:     'name,email,phone,event_type,date,guests,status\nJohn Doe,john@example.com,555-1234,wedding,2026-07-15,100,pending',
 };
 
 function addLog(log: LogEntry[], entry: Omit<LogEntry, 'id' | 'date'>): LogEntry[] {
