@@ -55,14 +55,19 @@ export const GET: APIRoute = async ({ url }) => {
         );
         break;
 
-      case 'staff':
-        rows = await sanityClient.fetch(
+      case 'staff': {
+        const staffRaw = await sanityClient.fetch(
           `*[_type == "staff"] | order(name asc) {
             accountNumber, name, email, phone, role, department, status, scheduleType,
             workDays, shiftStart, shiftEnd, startDate, notes, createdAt
           }`
         );
+        rows = staffRaw.map((s: any) => ({
+          ...s,
+          workDays: Array.isArray(s.workDays) ? s.workDays.join(';') : (s.workDays ?? ''),
+        }));
         break;
+      }
 
       case 'bills':
         rows = await sanityClient.fetch(
